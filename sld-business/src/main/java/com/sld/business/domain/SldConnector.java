@@ -48,8 +48,14 @@ public class SldConnector extends Model<SldConnector> {
     @TableField("src_input_object_id")
     private Long srcInputObjectId;
 
+    @TableField("src_output_object_id")
+    private Long srcOutputObjectId;
+
     @TableField("target_input_object_id")
     private Long targetInputObjectId;
+
+    @TableField("target_output_object_id")
+    private Long targetOutputObjectId;
 
     @TableField("transform_function_id")
     private Long transformFunctionId;

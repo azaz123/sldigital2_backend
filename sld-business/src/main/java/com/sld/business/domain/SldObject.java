@@ -32,6 +32,15 @@ public class SldObject extends Model<SldObject> {
     @TableField("name")
     private String name;
 
+    @TableField("is_list")
+    private Integer isList;
+
+    @TableField("list_type")
+    private Long listType;
+
+    @TableField("is_atom")
+    private Integer isAtom;
+
 
     @Override
     protected Serializable pkVal() {

@@ -30,6 +30,9 @@ public class SldField extends Model<SldField> {
     @TableId("id")
     private Long id;
 
+    @TableField("belong_object_id")
+    private Long belongObjectId;
+
     /**
      * 字段中文名称
      */
@@ -48,11 +51,7 @@ public class SldField extends Model<SldField> {
     @TableField("field_type")
     private Long fieldType;
 
-    @TableField("is_list")
-    private Integer isList;
 
-    @TableField("list_type")
-    private Long listType;
 
 
     @Override

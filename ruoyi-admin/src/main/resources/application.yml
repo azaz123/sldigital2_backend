@@ -113,6 +113,12 @@ mybatis-plus:
   mapperLocations: classpath*:mapper/**/*Mapper.xml
   configLocation: classpath:mybatis/mybatis-config.xml
 
+log4j:
+  logger:
+    com:
+      baomidou:
+        mybatisplus=DEBUG:
+
 # PageHelper分页插件
 pagehelper:
   helperDialect: mysql
