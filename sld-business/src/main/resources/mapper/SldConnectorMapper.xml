@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sld.business.mapper.SldConnectorMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.sld.business.domain.SldConnector">
+        <id column="id" property="id" />
+        <result column="connector_name" property="connectorName" />
+        <result column="src_con_object_id" property="srcConObjectId" />
+        <result column="target_con_object_id" property="targetConObjectId" />
+        <result column="src_input_object_id" property="srcInputObjectId" />
+        <result column="target_input_object_id" property="targetInputObjectId" />
+        <result column="transform_function_id" property="transformFunctionId" />
+        <result column="connector_type" property="connectorType" />
+        <result column="desc" property="desc" />
+    </resultMap>
+
+</mapper>
