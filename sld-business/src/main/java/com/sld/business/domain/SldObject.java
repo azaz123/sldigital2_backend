@@ -32,6 +32,9 @@ public class SldObject extends Model<SldObject> {
     @TableField("name")
     private String name;
 
+    @TableField("action_id")
+    private Long actionId;
+
     @TableField("is_list")
     private Integer isList;
 
@@ -40,6 +43,9 @@ public class SldObject extends Model<SldObject> {
 
     @TableField("is_atom")
     private Integer isAtom;
+
+    @TableField("is_action")
+    private Integer isAction;
 
 
     @Override

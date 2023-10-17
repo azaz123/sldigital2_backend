@@ -33,6 +33,9 @@ public class SldField extends Model<SldField> {
     @TableField("belong_object_id")
     private Long belongObjectId;
 
+    @TableField("action_id")
+    private Long actionId;
+
     /**
      * 字段中文名称
      */

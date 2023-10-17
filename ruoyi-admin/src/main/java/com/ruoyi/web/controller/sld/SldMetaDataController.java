@@ -1,19 +1,13 @@
 package com.ruoyi.web.controller.sld;
 
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.ruoyi.common.core.domain.AjaxResult;
-import com.ruoyi.web.controller.sld.converter.SldConnectorConverter;
 import com.ruoyi.web.controller.sld.converter.SldFieldConverter;
 import com.ruoyi.web.controller.sld.converter.SldObjectConverter;
-import com.sld.business.domain.SldConnector;
 import com.sld.business.domain.SldField;
 import com.sld.business.domain.SldObject;
-import com.sld.business.mapper.SldConnectorMapper;
 import com.sld.business.mapper.SldFieldMapper;
 import com.sld.business.mapper.SldObjectMapper;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.collections.MapUtils;
-import org.apache.commons.collections.map.HashedMap;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -36,8 +30,6 @@ public class SldMetaDataController {
     @Resource
     private SldFieldMapper sldFieldMapper;
 
-    @Resource
-    private SldConnectorMapper sldConnectorMapper;
 
     /**
      * 创建对象
@@ -91,6 +83,9 @@ public class SldMetaDataController {
     private List<Map<String,Object>> queryObjectList(Map<String,Object> req){
         List<Map<String,Object>> retData = new ArrayList<>();
         List<SldObject> objectList = sldObjectMapper.selectByMap(new HashMap<>());
+        List<Long> actionIds = objectList.stream().map(ao->ao.getActionId()).collect(Collectors.toList());
+        List<SldObject> actionObjects = sldObjectMapper.selectBatchIds(actionIds);
+        Map<Long,SldObject> actionObjectsIndex = actionObjects.stream().collect(Collectors.toMap(ao->ao.getActionId(),ao->ao));
         if(CollectionUtils.isNotEmpty(objectList)){
             for(SldObject object : objectList){
                 Map<String,Object> elm = new HashMap<>();
@@ -102,7 +97,9 @@ public class SldMetaDataController {
                     elm.put("fieldList",fieldInfoList);
                 }
                 elm.put("objectInfo",object);
-
+                if(actionObjectsIndex.containsKey(object.getActionId())){
+                    elm.put("objectActionInfo",actionObjectsIndex.get(object.getActionId()));
+                }
                 retData.add(elm);
             }
         }
@@ -113,6 +110,9 @@ public class SldMetaDataController {
         Map<String,Object> cond = new HashMap<>();
         cond.put("id",objectId);
         List<SldObject> objectList = sldObjectMapper.selectByMap(cond);
+        List<Long> actionIds = objectList.stream().map(ao->ao.getActionId()).collect(Collectors.toList());
+        List<SldObject> actionObjects = sldObjectMapper.selectBatchIds(actionIds);
+        Map<Long,SldObject> actionObjectsIndex = actionObjects.stream().collect(Collectors.toMap(ao->ao.getActionId(),ao->ao));
         if(CollectionUtils.isNotEmpty(objectList)){
             for(SldObject object : objectList){
                 Map<String,Object> elm = new HashMap<>();
@@ -124,6 +124,10 @@ public class SldMetaDataController {
                     elm.put("fieldList",fieldInfoList);
                 }
                 elm.put("objectInfo",object);
+                SldObject actionObject = sldObjectMapper.selectById(object.getActionId());
+                if(actionObjectsIndex.containsKey(object.getActionId())){
+                    elm.put("objectActionInfo",actionObjectsIndex.get(object.getActionId()));
+                }
                 return elm;
             }
         }
@@ -176,196 +180,4 @@ public class SldMetaDataController {
         return AjaxResult.success();
     }
 
-    /**
-     * 创建连接器
-     */
-    @PostMapping("/create-connector")
-    @Transactional(rollbackFor = Exception.class)
-    public AjaxResult createConnector(@RequestBody Map<String,Object> req) throws Exception
-    {
-        SldConnector po = SldConnectorConverter.convertToSldConnector(req);
-        sldConnectorMapper.insert(po);
-        return AjaxResult.success();
-    }
-
-    /**
-     * 创建连接器
-     */
-    @PostMapping("/del-connector")
-    @Transactional(rollbackFor = Exception.class)
-    public AjaxResult delConnector(@RequestBody Map<String,Object> req) throws Exception
-    {
-        if(req.containsKey("connectorId")){
-            Long connectorId = (Long)req.get("connectorId");
-            sldConnectorMapper.deleteById(connectorId);
-        }
-        return AjaxResult.success();
-    }
-
-    private List<Map<String,Object>> queryConnectorList(Map<String,Object> req){
-        List<Map<String,Object>> retData = new ArrayList<>();
-        List<SldConnector> connectorList = sldConnectorMapper.selectByMap(new HashMap<>());
-        if(CollectionUtils.isNotEmpty(connectorList)){
-            for(SldConnector connector : connectorList){
-                Map<String,Object> elm = new HashMap<>();
-                elm.put("id",connector.getId());
-                elm.put("connectorName",connector.getConnectorName());
-                elm.put("connectorType",connector.getConnectorType());
-                elm.put("desc",connector.getDesc());
-                Long srcConId = connector.getSrcConObjectId();
-                Long targetConId = connector.getTargetConObjectId();
-                Long srcInputId = connector.getSrcInputObjectId();
-                Long srcOutputId = connector.getSrcOutputObjectId();
-                Long targetInputId = connector.getTargetInputObjectId();
-                Long targetOutputId = connector.getTargetOutputObjectId();
-                Long transId = connector.getTransformFunctionId();
-                if(srcConId!=null){
-                    Map<String,Object> data = querySingleConnector(srcConId);
-                    if(MapUtils.isNotEmpty(data)){
-                        elm.put("srcConObject",data);
-                    }
-                }
-
-                if(targetConId!=null){
-                    Map<String,Object> data = querySingleConnector(targetConId);
-                    if(MapUtils.isNotEmpty(data)){
-                        elm.put("targetConObject",data);
-                    }
-                }
-
-                if(srcInputId!=null){
-                    Map<String,Object> data = querySingleConnector(srcInputId);
-                    if(MapUtils.isNotEmpty(data)){
-                        elm.put("srcInputObjectId",data);
-                    }
-                }
-
-                if(srcOutputId!=null){
-                    Map<String,Object> data = querySingleConnector(srcOutputId);
-                    if(MapUtils.isNotEmpty(data)){
-                        elm.put("srcOutputObjectId",data);
-                    }
-                }
-
-                if(targetInputId!=null){
-                    Map<String,Object> data = querySingleConnector(targetInputId);
-                    if(MapUtils.isNotEmpty(data)){
-                        elm.put("targetInputObjectId",data);
-                    }
-                }
-
-                if(targetOutputId!=null){
-                    Map<String,Object> data = querySingleConnector(targetOutputId);
-                    if(MapUtils.isNotEmpty(data)){
-                        elm.put("targetOutputObjectId",data);
-                    }
-                }
-
-                if(transId!=null){
-                    Map<String,Object> data = querySingleConnector(transId);
-                    if(MapUtils.isNotEmpty(data)){
-                        elm.put("transformFunctionId",data);
-                    }
-                }
-                retData.add(elm);
-            }
-        }
-        return retData;
-    }
-
-    private Map<String,Object> querySingleConnector(Long objectId){
-        List<SldConnector> connectorList = sldConnectorMapper.selectByMap(new HashMap<>());
-        if(CollectionUtils.isNotEmpty(connectorList)){
-            for(SldConnector connector : connectorList){
-                Map<String,Object> elm = new HashMap<>();
-                elm.put("id",connector.getId());
-                elm.put("connectorName",connector.getConnectorName());
-                elm.put("connectorType",connector.getConnectorType());
-                elm.put("desc",connector.getDesc());
-                Long srcConId = connector.getSrcConObjectId();
-                Long targetConId = connector.getTargetConObjectId();
-                Long srcInputId = connector.getSrcInputObjectId();
-                Long srcOutputId = connector.getSrcOutputObjectId();
-                Long targetInputId = connector.getTargetInputObjectId();
-                Long targetOutputId = connector.getTargetOutputObjectId();
-                Long transId = connector.getTransformFunctionId();
-                if(srcConId!=null){
-                    Map<String,Object> data = querySingleConnector(srcConId);
-                    if(MapUtils.isNotEmpty(data)){
-                        elm.put("srcConObject",data);
-                    }
-                }
-
-                if(targetConId!=null){
-                    Map<String,Object> data = querySingleConnector(targetConId);
-                    if(MapUtils.isNotEmpty(data)){
-                        elm.put("targetConObject",data);
-                    }
-                }
-
-                if(srcInputId!=null){
-                    Map<String,Object> data = querySingleConnector(srcInputId);
-                    if(MapUtils.isNotEmpty(data)){
-                        elm.put("srcInputObjectId",data);
-                    }
-                }
-
-                if(srcOutputId!=null){
-                    Map<String,Object> data = querySingleConnector(srcOutputId);
-                    if(MapUtils.isNotEmpty(data)){
-                        elm.put("srcOutputObjectId",data);
-                    }
-                }
-
-                if(targetInputId!=null){
-                    Map<String,Object> data = querySingleConnector(targetInputId);
-                    if(MapUtils.isNotEmpty(data)){
-                        elm.put("targetInputObjectId",data);
-                    }
-                }
-
-                if(targetOutputId!=null){
-                    Map<String,Object> data = querySingleConnector(targetOutputId);
-                    if(MapUtils.isNotEmpty(data)){
-                        elm.put("targetOutputObjectId",data);
-                    }
-                }
-
-                if(transId!=null){
-                    Map<String,Object> data = querySingleConnector(transId);
-                    if(MapUtils.isNotEmpty(data)){
-                        elm.put("transformFunctionId",data);
-                    }
-                }
-                return elm;
-            }
-        }
-        return new HashMap<>();
-    }
-
-    /**
-     * 查询连接器详情
-     */
-    @PostMapping("/connector-detail")
-    @Transactional(rollbackFor = Exception.class)
-    public AjaxResult listConnectorDetail(@RequestBody Map<String,Object> req) throws Exception
-    {
-        Map<String,Object> retData = new HashMap<>();
-        if(req.containsKey("connectorId")){
-            Long connectorId = (Long)req.get("connectorId");
-            retData = querySingleConnector(connectorId);
-        }
-        return AjaxResult.success(retData);
-    }
-
-    /**
-     * 查询连接器列表
-     */
-    @PostMapping("/list-connector")
-    @Transactional(rollbackFor = Exception.class)
-    public AjaxResult listConnector(@RequestBody Map<String,Object> req) throws Exception
-    {
-        List<Map<String,Object>> retData = queryConnectorList(req);
-        return AjaxResult.success(retData);
-    }
 }
