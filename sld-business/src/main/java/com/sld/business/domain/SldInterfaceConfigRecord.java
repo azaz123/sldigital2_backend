@@ -11,7 +11,7 @@ import lombok.experimental.Accessors;
 
 /**
  * <p>
- * 接口开通子记录
+ * 接口配置记录
  * </p>
  *
  * @author hrz
@@ -20,28 +20,30 @@ import lombok.experimental.Accessors;
 @Data
 @EqualsAndHashCode(callSuper = false)
 @Accessors(chain = true)
-@TableName("sld_interface_sub_open_record")
-public class SldInterfaceSubOpenRecord extends Model<SldInterfaceSubOpenRecord> {
+@TableName("sld_interface_config_record")
+public class SldInterfaceConfigRecord extends Model<SldInterfaceConfigRecord> {
 
 
-    /**
-     * 主键
-     */
     @TableId("id")
     private Long id;
 
     @TableField("interface_open_record_id")
-    private Long interfaceId;
+    private Long interfaceOpenRecordId;
 
-    /**
-     * 子对象
-     */
-    @TableField("object_id")
+    @TableField("object_Id")
     private Long objectId;
 
-    @TableField("is_need_config")
-    private Long isNeedConfig;
+    /**
+     * 1 是公共  2 不是公共
+     */
+    @TableField("is_public")
+    private Long isPublic;
 
+    /**
+     * 1 数据归属id—租户id
+     */
+    @TableField("belong_id")
+    private Long belongId;
 
 
     @Override
