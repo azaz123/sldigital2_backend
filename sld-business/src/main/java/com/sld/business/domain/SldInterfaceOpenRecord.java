@@ -3,6 +3,7 @@ package com.sld.business.domain;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.baomidou.mybatisplus.extension.activerecord.Model;
 import com.baomidou.mybatisplus.annotation.TableId;
+import java.time.LocalDateTime;
 import com.baomidou.mybatisplus.annotation.TableField;
 import java.io.Serializable;
 import lombok.Data;
@@ -11,17 +12,17 @@ import lombok.experimental.Accessors;
 
 /**
  * <p>
- * 对象字段表
+ * 接口开通记录
  * </p>
  *
  * @author hrz
- * @since 2023-10-16
+ * @since 2023-10-19
  */
 @Data
 @EqualsAndHashCode(callSuper = false)
 @Accessors(chain = true)
-@TableName("sld_field")
-public class SldField extends Model<SldField> {
+@TableName("sld_interface_open_record")
+public class SldInterfaceOpenRecord extends Model<SldInterfaceOpenRecord> {
 
 
     /**
@@ -30,31 +31,29 @@ public class SldField extends Model<SldField> {
     @TableId("id")
     private Long id;
 
-    @TableField("belong_object_id")
-    private Long belongObjectId;
-
-    @TableField("action_id")
-    private Long actionId;
+    /**
+     * 接口中文名
+     */
+    @TableField("interface_cn_ame")
+    private String interfaceCnAme;
 
     /**
-     * 字段中文名称
+     * 接口英文名
      */
-    @TableField("field_ch_name")
-    private String fieldChName;
+    @TableField("interface_eng_name")
+    private String interfaceEngName;
 
     /**
-     * 字段英文名称
+     * 协议code
      */
-    @TableField("field_eng_name")
-    private String fieldEngName;
+    @TableField("protocol_code")
+    private String protocolCode;
 
     /**
-     * 字段类型
+     * 创建时间
      */
-    @TableField("field_type")
-    private Long fieldType;
-
-
+    @TableField("create_date")
+    private LocalDateTime createDate;
 
 
     @Override

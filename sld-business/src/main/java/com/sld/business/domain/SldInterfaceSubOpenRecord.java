@@ -11,42 +11,31 @@ import lombok.experimental.Accessors;
 
 /**
  * <p>
- * 对象表
+ * 接口开通子记录
  * </p>
  *
  * @author hrz
- * @since 2023-10-16
+ * @since 2023-10-19
  */
 @Data
 @EqualsAndHashCode(callSuper = false)
 @Accessors(chain = true)
-@TableName("sld_object")
+@TableName("sld_interface_sub_open_record")
+public class SldInterfaceSubOpenRecord extends Model<SldInterfaceSubOpenRecord> {
 
-public class SldObject extends Model<SldObject> {
 
+    /**
+     * 主键
+     */
     @TableId("id")
     private Long id;
 
-    @TableField("object_code")
-    private String objectCode;
+    /**
+     * 子对象
+     */
+    @TableField("object_id")
+    private Long objectId;
 
-    @TableField("object_struct")
-    private Long objectStruct;
-
-    @TableField("object_value_type")
-    private String objectValueType;
-
-    @TableField("object_value")
-    private String objectValue;
-
-    @TableField("class_code")
-    private String classCode;
-
-    @TableField("controll_param")
-    private Long controllParam;
-
-    @TableField("belong_object_id")
-    private Long belongObjectId;
 
     @Override
     protected Serializable pkVal() {

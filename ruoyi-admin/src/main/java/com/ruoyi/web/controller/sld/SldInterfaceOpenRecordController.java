@@ -7,14 +7,14 @@ import org.springframework.stereotype.Controller;
 
 /**
  * <p>
- * 对象字段表 前端控制器
+ * 接口开通记录 前端控制器
  * </p>
  *
  * @author hrz
- * @since 2023-10-16
+ * @since 2023-10-19
  */
 @Controller
-@RequestMapping("/sld-field")
-public class SldFieldController {
+@RequestMapping("/sld-interface-open-record")
+public class SldInterfaceOpenRecordController {
 
 }
