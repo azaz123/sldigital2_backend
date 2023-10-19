@@ -30,11 +30,15 @@ public class SldInterfaceSubOpenRecord extends Model<SldInterfaceSubOpenRecord> 
     @TableId("id")
     private Long id;
 
+    @TableField("interface_open_record_id")
+    private Long interfaceId;
+
     /**
      * 子对象
      */
     @TableField("object_id")
     private Long objectId;
+
 
 
     @Override
