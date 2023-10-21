@@ -32,10 +32,17 @@ public class SldObjectConverter {
             try {
                 Field field = clazz.getDeclaredField(fieldName);
                 field.setAccessible(true);
-                field.set(sldObject, value);
+                if(field.getType().equals(Long.class)){
+                    field.set(sldObject, Long.valueOf(value.toString()));
+                }else{
+                    field.set(sldObject, value);
+                }
             } catch (NoSuchFieldException | IllegalAccessException e) {
                 e.printStackTrace();
             }
+        }
+        if(sldObject.getBelongObjectId()==null){
+            sldObject.setBelongObjectId(-1L);
         }
         return sldObject;
     }

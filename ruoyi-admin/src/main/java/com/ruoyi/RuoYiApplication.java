@@ -11,7 +11,7 @@ import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
  * @author ruoyi
  */
 
-@SpringBootApplication(exclude = {DataSourceAutoConfiguration.class}, scanBasePackages = {"com.sld", "com.ruoyi"})
+@SpringBootApplication(exclude = {DataSourceAutoConfiguration.class}, scanBasePackages = {"com.sld.*", "com.ruoyi.*"})
 @MapperScan(basePackages = {"com.sld.**.mapper", "com.ruoyi.system.mapper"})
 public class RuoYiApplication
 {

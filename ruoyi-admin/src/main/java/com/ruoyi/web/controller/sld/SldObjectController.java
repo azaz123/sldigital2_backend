@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
@@ -25,7 +26,7 @@ import javax.annotation.Resource;
  * @author hrz
  * @since 2023-10-16
  */
-@Controller
+@RestController
 @RequestMapping("/sld-object")
 public class SldObjectController {
 

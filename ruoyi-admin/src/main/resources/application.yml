@@ -38,6 +38,7 @@ logging:
   level:
     com.ruoyi: debug
     org.springframework: warn
+    com.sld: debug
 
 # 用户配置
 user:
@@ -113,11 +114,14 @@ mybatis-plus:
   mapperLocations: classpath*:mapper/**/*Mapper.xml
   configLocation: classpath:mybatis/mybatis-config.xml
 
-log4j:
   logger:
     com:
       baomidou:
         mybatisplus=DEBUG:
+        appenderRefs:
+          - ref: Console
+
+
 
 # PageHelper分页插件
 pagehelper:

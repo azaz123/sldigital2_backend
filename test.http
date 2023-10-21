@@ -1,0 +1,13 @@
+###
+POST http://127.0.0.1:8080/sld-meta/list-object
+Accept: application/json, text/plain, */*
+Accept-Encoding: gzip, deflate
+Accept-Language: zh-CN,zh;q=0.9
+Authorization: Bearer eyJhbGciOiJIUzUxMiJ9.eyJsb2dpbl91c2VyX2tleSI6ImRjYjlhNWIwLTBhYjctNDAwYy05MDBkLWIxMWRiY2Y5NmI2OCJ9.kS7VUjPG92pFRk5R14xZPPf2EeL_e0xHBysK0BLwu9BspcWnjmRxxHt64EtFQBZhnRXakhP_zXECcK_Wdk8M8g
+Cache-Control: no-cache
+Connection: keep-alive
+Content-Type: application/json
+
+{
+
+}

@@ -1,5 +1,6 @@
 package com.sld.business.domain;
 
+import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.baomidou.mybatisplus.extension.activerecord.Model;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -28,8 +29,8 @@ public class SldInterfaceOpenRecord extends Model<SldInterfaceOpenRecord> {
     /**
      * 主键
      */
-    @TableId("id")
-    private Long id;
+    @TableId(type = IdType.ASSIGN_ID)
+    private String id;
 
     /**
      * 接口中文名
