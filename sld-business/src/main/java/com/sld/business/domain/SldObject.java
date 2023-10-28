@@ -47,7 +47,7 @@ public class SldObject extends Model<SldObject> {
     private Long controllParam;
 
     @TableField("belong_object_id")
-    private Long belongObjectId;
+    private String belongObjectId;
 
     @Override
     protected Serializable pkVal() {

@@ -1,12 +1,10 @@
 package com.ruoyi.web.controller.sld;
 
 import com.ruoyi.common.core.domain.AjaxResult;
-import com.ruoyi.web.controller.sld.converter.ConvertMapToUnderLine;
-import com.ruoyi.web.controller.sld.converter.SldObjectConverter;
+import com.sld.business.converter.ConvertMapToUnderLine;
+import com.sld.business.converter.ObjectConverter;
 import com.sld.business.domain.SldObject;
 import com.sld.business.mapper.SldObjectMapper;
-import org.apache.commons.collections.CollectionUtils;
-import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -14,11 +12,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/sld-meta")
@@ -35,7 +31,7 @@ public class SldMetaDataController {
     {
         if(req.containsKey("objectInfo")){
             Map<String,Object> sldObject = (Map<String,Object>)req.get("objectInfo");
-            sldObjectMapper.insert(SldObjectConverter.convertToSldObject(sldObject));
+            sldObjectMapper.insert(ObjectConverter.convertToSldObject(sldObject));
         }
         return AjaxResult.success();
     }
@@ -49,7 +45,7 @@ public class SldMetaDataController {
     {
         if(req.containsKey("objectInfo")){
             Map<String,Object> sldObject = (Map<String,Object>)req.get("objectInfo");
-            sldObjectMapper.updateById(SldObjectConverter.convertToSldObject(sldObject));
+            sldObjectMapper.updateById(ObjectConverter.convertToSldObject(sldObject));
         }
         return AjaxResult.success();
     }
@@ -65,7 +61,7 @@ public class SldMetaDataController {
         Map<String,Object> retData = new HashMap<>();
         if(req.containsKey("objectId")){
             SldObject sldObject = sldObjectMapper.selectById((String)req.get("objectId"));
-            retData = SldObjectConverter.convertToMap(sldObject);
+            retData = ObjectConverter.convertToMap(sldObject);
         }
         return AjaxResult.success(retData);
     }

@@ -47,11 +47,6 @@ public class SldInterfaceOpenRecord extends Model<SldInterfaceOpenRecord> {
     @TableField("protocol_object_id")
     private Long protocolObjectId;
 
-    /**
-     * 协议code
-     */
-    @TableField("protocol_code")
-    private String protocolCode;
 
     /**
      * 创建时间

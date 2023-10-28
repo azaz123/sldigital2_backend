@@ -32,13 +32,13 @@ public class SldInterfaceSubOpenRecord extends Model<SldInterfaceSubOpenRecord> 
     private String id;
 
     @TableField("interface_open_record_id")
-    private Long interfaceId;
+    private String interfaceId;
 
     /**
      * 子对象
      */
     @TableField("object_id")
-    private Long objectId;
+    private String objectId;
 
     @TableField("is_need_config")
     private Long isNeedConfig;
