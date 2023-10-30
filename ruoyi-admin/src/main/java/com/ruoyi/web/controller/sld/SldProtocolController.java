@@ -23,6 +23,120 @@ public class SldProtocolController {
     private SldObjectMapper sldObjectMapper;
 
     /**
+     * 上架数据库查数据协议对象
+     */
+    @PostMapping("/create-db-query-protocol")
+    @Transactional(rollbackFor = Exception.class)
+    public AjaxResult createDbQueryProtocol(@RequestBody Map<String,Object> req) throws Exception{
+        //创建db对象
+        SldObject dbQuery = new SldObject();
+        dbQuery.setObjectCode("dbQuery");
+        dbQuery.setObjectStruct(1L);
+        dbQuery.setClassCode("protocol");
+        sldObjectMapper.insert(dbQuery);
+
+        SldObject dbAddress = new SldObject();
+        dbAddress.setObjectCode("dbAddress");
+        dbAddress.setObjectStruct(1L);
+        dbAddress.setBelongObjectId(dbQuery.getId());
+        sldObjectMapper.insert(dbAddress);
+
+        SldObject dbUser = new SldObject();
+        dbUser.setObjectCode("dbUser");
+        dbUser.setObjectStruct(1L);
+        dbUser.setBelongObjectId(dbQuery.getId());
+        sldObjectMapper.insert(dbUser);
+
+        SldObject dbPassWord = new SldObject();
+        dbPassWord.setObjectCode("dbPassWord");
+        dbPassWord.setObjectStruct(1L);
+        dbPassWord.setBelongObjectId(dbQuery.getId());
+        sldObjectMapper.insert(dbPassWord);
+
+        SldObject dbSchema = new SldObject();
+        dbSchema.setObjectCode("dbSchema");
+        dbSchema.setObjectStruct(1L);
+        dbSchema.setBelongObjectId(dbQuery.getId());
+        sldObjectMapper.insert(dbSchema);
+
+        SldObject dbAction = new SldObject();
+        dbAction.setObjectCode("dbAction");
+        dbAction.setObjectStruct(1L);
+        dbAction.setBelongObjectId(dbQuery.getId());
+        sldObjectMapper.insert(dbAction);
+
+        SldObject dbReqObject = new SldObject();
+        dbReqObject.setObjectCode("dbReqObject");
+        dbReqObject.setObjectStruct(1L);
+        dbReqObject.setBelongObjectId(dbQuery.getId());
+        sldObjectMapper.insert(dbReqObject);
+
+        SldObject dbRetObject = new SldObject();
+        dbRetObject.setObjectCode("dbRetObject");
+        dbRetObject.setObjectStruct(1L);
+        dbRetObject.setBelongObjectId(dbQuery.getId());
+        sldObjectMapper.insert(dbRetObject);
+        return AjaxResult.success();
+    }
+
+    /**
+     * 上架数据库写数据协议对象
+     */
+    @PostMapping("/create-db-write-protocol")
+    @Transactional(rollbackFor = Exception.class)
+    public AjaxResult createDbWriteProtocol(@RequestBody Map<String,Object> req) throws Exception{
+        //创建db对象
+        SldObject dbWrite = new SldObject();
+        dbWrite.setObjectCode("dbWrite");
+        dbWrite.setObjectStruct(1L);
+        dbWrite.setClassCode("protocol");
+        sldObjectMapper.insert(dbWrite);
+
+        SldObject dbAddress = new SldObject();
+        dbAddress.setObjectCode("dbAddress");
+        dbAddress.setObjectStruct(1L);
+        dbAddress.setBelongObjectId(dbWrite.getId());
+        sldObjectMapper.insert(dbAddress);
+
+        SldObject dbUser = new SldObject();
+        dbUser.setObjectCode("dbUser");
+        dbUser.setObjectStruct(1L);
+        dbUser.setBelongObjectId(dbWrite.getId());
+        sldObjectMapper.insert(dbUser);
+
+        SldObject dbPassWord = new SldObject();
+        dbPassWord.setObjectCode("dbPassWord");
+        dbPassWord.setObjectStruct(1L);
+        dbPassWord.setBelongObjectId(dbWrite.getId());
+        sldObjectMapper.insert(dbPassWord);
+
+        SldObject dbSchema = new SldObject();
+        dbSchema.setObjectCode("dbSchema");
+        dbSchema.setObjectStruct(1L);
+        dbSchema.setBelongObjectId(dbWrite.getId());
+        sldObjectMapper.insert(dbSchema);
+
+        SldObject dbAction = new SldObject();
+        dbAction.setObjectCode("dbAction");
+        dbAction.setObjectStruct(1L);
+        dbAction.setBelongObjectId(dbWrite.getId());
+        sldObjectMapper.insert(dbAction);
+
+        SldObject dbReqObject = new SldObject();
+        dbReqObject.setObjectCode("dbReqObject");
+        dbReqObject.setObjectStruct(1L);
+        dbReqObject.setBelongObjectId(dbWrite.getId());
+        sldObjectMapper.insert(dbReqObject);
+
+        SldObject dbRetObject = new SldObject();
+        dbRetObject.setObjectCode("dbRetObject");
+        dbRetObject.setObjectStruct(1L);
+        dbRetObject.setBelongObjectId(dbWrite.getId());
+        sldObjectMapper.insert(dbRetObject);
+        return AjaxResult.success();
+    }
+
+    /**
      * 上架http协议对象
      */
     @PostMapping("/create-http-protocol")
@@ -40,6 +154,7 @@ public class SldProtocolController {
         header.setObjectCode("header");
         header.setObjectStruct(1L);
         header.setBelongObjectId(http.getId());
+        sldObjectMapper.insert(header);
 
         // 创建param对象
         SldObject param = new SldObject();
@@ -61,7 +176,7 @@ public class SldProtocolController {
         retData.setObjectStruct(1L);
         retData.setBelongObjectId(http.getId());
         sldObjectMapper.insert(retData);
-        return AjaxResult.success();
+        return AjaxResult.success(http);
     }
 
     /**

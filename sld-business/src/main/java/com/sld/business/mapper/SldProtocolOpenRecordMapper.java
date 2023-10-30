@@ -1,6 +1,6 @@
 package com.sld.business.mapper;
 
-import com.sld.business.domain.SldInterfaceOpenRecord;
+import com.sld.business.domain.SldProtocolOpenRecord;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
 /**
@@ -11,6 +11,6 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
  * @author hrz
  * @since 2023-10-19
  */
-public interface SldInterfaceOpenRecordMapper extends BaseMapper<SldInterfaceOpenRecord> {
+public interface SldProtocolOpenRecordMapper extends BaseMapper<SldProtocolOpenRecord> {
 
 }

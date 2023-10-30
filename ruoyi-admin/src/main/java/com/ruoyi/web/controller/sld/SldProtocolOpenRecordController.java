@@ -1,30 +1,25 @@
 package com.ruoyi.web.controller.sld;
 
 
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.ruoyi.common.core.domain.AjaxResult;
 import com.sld.business.converter.ObjectConverter;
-import com.sld.business.domain.SldInterfaceOpenRecord;
-import com.sld.business.domain.SldInterfaceSubOpenRecord;
+import com.sld.business.domain.SldProtocolOpenRecord;
+import com.sld.business.domain.SldProtocolSubOpenRecord;
 import com.sld.business.domain.SldObject;
-import com.sld.business.mapper.SldInterfaceOpenRecordMapper;
-import com.sld.business.mapper.SldInterfaceSubOpenRecordMapper;
+import com.sld.business.mapper.SldProtocolOpenRecordMapper;
+import com.sld.business.mapper.SldProtocolSubOpenRecordMapper;
 import com.sld.business.mapper.SldObjectMapper;
 import com.sld.business.service.SldObjectService;
-import com.sld.business.util.ObjectHelper;
 import org.apache.commons.collections.map.HashedMap;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -38,16 +33,16 @@ import java.util.Map;
  */
 @RestController
 @RequestMapping("/sld-interface-open-record")
-public class SldInterfaceOpenRecordController {
+public class SldProtocolOpenRecordController {
 
     @Resource
     private SldObjectMapper sldObjectMapper;
 
     @Resource
-    private SldInterfaceOpenRecordMapper sldInterfaceOpenRecordMapper;
+    private SldProtocolOpenRecordMapper sldInterfaceOpenRecordMapper;
 
     @Resource
-    private SldInterfaceSubOpenRecordMapper sldInterfaceSubOpenRecordMapper;
+    private SldProtocolSubOpenRecordMapper sldInterfaceSubOpenRecordMapper;
 
     @Resource
     private SldObjectService sldObjectService;
@@ -59,7 +54,7 @@ public class SldInterfaceOpenRecordController {
     @PostMapping("/create-interface")
     @Transactional(rollbackFor = Exception.class)
     public AjaxResult createInterface(@RequestBody Map<String,Object> req) throws Exception{
-        SldInterfaceOpenRecord openRecord = ObjectConverter.convertToInterfaceOpenRecordObject((Map<String,Object>)req.get("openRecord"));
+        SldProtocolOpenRecord openRecord = ObjectConverter.convertToInterfaceOpenRecordObject((Map<String,Object>)req.get("openRecord"));
         sldInterfaceOpenRecordMapper.insert(openRecord);
         Map<String,SldObject> index = new HashedMap();
         sldObjectService.createKeyValueForObject((Map<String,Object>)req.get("httpAttr"),(sldObject) -> {
@@ -70,7 +65,7 @@ public class SldInterfaceOpenRecordController {
         for(SldObject oneValue : valueObjects){
             if(index.containsKey(oneValue.getId())){
                 SldObject keyObject = index.get(oneValue.getId());
-                SldInterfaceSubOpenRecord elm = new SldInterfaceSubOpenRecord();
+                SldProtocolSubOpenRecord elm = new SldProtocolSubOpenRecord();
                 elm.setId(openRecord.getId());
                 if(oneValue.getObjectValue()!=null && oneValue.getObjectValue().equals("---")){
                     elm.setObjectId(keyObject.getId());

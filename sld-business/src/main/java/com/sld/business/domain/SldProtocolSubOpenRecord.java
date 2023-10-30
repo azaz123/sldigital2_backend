@@ -21,8 +21,8 @@ import lombok.experimental.Accessors;
 @Data
 @EqualsAndHashCode(callSuper = false)
 @Accessors(chain = true)
-@TableName("sld_interface_sub_open_record")
-public class SldInterfaceSubOpenRecord extends Model<SldInterfaceSubOpenRecord> {
+@TableName("sld_protocol_sub_open_record")
+public class SldProtocolSubOpenRecord extends Model<SldProtocolSubOpenRecord> {
 
 
     /**
@@ -31,8 +31,8 @@ public class SldInterfaceSubOpenRecord extends Model<SldInterfaceSubOpenRecord> 
     @TableId(type = IdType.ASSIGN_ID)
     private String id;
 
-    @TableField("interface_open_record_id")
-    private String interfaceId;
+    @TableField("protocol_open_record_id")
+    private String protocolId;
 
     /**
      * 子对象

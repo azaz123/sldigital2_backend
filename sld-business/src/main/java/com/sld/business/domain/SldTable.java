@@ -1,6 +1,5 @@
 package com.sld.business.domain;
 
-import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.baomidou.mybatisplus.extension.activerecord.Model;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -12,39 +11,42 @@ import lombok.experimental.Accessors;
 
 /**
  * <p>
- * 接口配置记录
+ * 中间表
  * </p>
  *
  * @author hrz
- * @since 2023-10-19
+ * @since 2023-10-30
  */
 @Data
 @EqualsAndHashCode(callSuper = false)
 @Accessors(chain = true)
-@TableName("sld_interface_config_record")
-public class SldInterfaceConfigRecord extends Model<SldInterfaceConfigRecord> {
+@TableName("sld_table")
+public class SldTable extends Model<SldTable> {
 
-
-    @TableId(type = IdType.ASSIGN_ID)
-    private String id;
-
-    @TableField("interface_open_record_id")
-    private Long interfaceOpenRecordId;
-
-    @TableField("object_Id")
-    private Long objectId;
 
     /**
-     * 1 是公共  2 不是公共
+     * 主键
      */
-    @TableField("is_public")
-    private Long isPublic;
+    @TableId("id")
+    private Long id;
 
     /**
-     * 1 数据归属id—租户id
+     * 表英文名称
      */
-    @TableField("belong_id")
-    private Long belongId;
+    @TableField("table_eng_name")
+    private String tableEngName;
+
+    /**
+     * 表中文名称
+     */
+    @TableField("table_cne_name")
+    private String tableCneName;
+
+    /**
+     * 租户id
+     */
+    @TableField("tenant_id")
+    private Long tenantId;
 
 
     @Override

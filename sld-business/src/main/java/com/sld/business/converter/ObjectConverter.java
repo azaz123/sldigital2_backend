@@ -1,6 +1,6 @@
 package com.sld.business.converter;
 
-import com.sld.business.domain.SldInterfaceOpenRecord;
+import com.sld.business.domain.SldProtocolOpenRecord;
 import com.sld.business.domain.SldObject;
 
 import java.lang.reflect.Field;
@@ -48,8 +48,8 @@ public class ObjectConverter {
         return sldObject;
     }
 
-    public static SldInterfaceOpenRecord convertToInterfaceOpenRecordObject(Map<String, Object> map) {
-        SldInterfaceOpenRecord retData = new SldInterfaceOpenRecord();
+    public static SldProtocolOpenRecord convertToInterfaceOpenRecordObject(Map<String, Object> map) {
+        SldProtocolOpenRecord retData = new SldProtocolOpenRecord();
         Class<?> clazz = retData.getClass();
         for (Map.Entry<String, Object> entry : map.entrySet()) {
             String fieldName = entry.getKey();

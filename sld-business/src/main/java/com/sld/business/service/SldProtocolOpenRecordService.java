@@ -1,6 +1,6 @@
 package com.sld.business.service;
 
-import com.sld.business.domain.SldInterfaceOpenRecord;
+import com.sld.business.domain.SldProtocolOpenRecord;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 /**
@@ -11,6 +11,6 @@ import com.baomidou.mybatisplus.extension.service.IService;
  * @author hrz
  * @since 2023-10-19
  */
-public interface SldInterfaceOpenRecordService extends IService<SldInterfaceOpenRecord> {
+public interface SldProtocolOpenRecordService extends IService<SldProtocolOpenRecord> {
 
 }
