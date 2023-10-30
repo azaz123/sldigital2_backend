@@ -32,7 +32,7 @@ import java.util.Map;
  * @since 2023-10-19
  */
 @RestController
-@RequestMapping("/sld-interface-open-record")
+@RequestMapping("/sld-protocol-open-record")
 public class SldProtocolOpenRecordController {
 
     @Resource
@@ -48,16 +48,18 @@ public class SldProtocolOpenRecordController {
     private SldObjectService sldObjectService;
 
 
+
+
     /**
-     * 上架接口
+     * 上架协议
      */
-    @PostMapping("/create-interface")
+    @PostMapping("/release-protocol")
     @Transactional(rollbackFor = Exception.class)
-    public AjaxResult createInterface(@RequestBody Map<String,Object> req) throws Exception{
+    public AjaxResult releaseProtocol(@RequestBody Map<String,Object> req) throws Exception{
         SldProtocolOpenRecord openRecord = ObjectConverter.convertToInterfaceOpenRecordObject((Map<String,Object>)req.get("openRecord"));
         sldInterfaceOpenRecordMapper.insert(openRecord);
         Map<String,SldObject> index = new HashedMap();
-        sldObjectService.createKeyValueForObject((Map<String,Object>)req.get("httpAttr"),(sldObject) -> {
+        sldObjectService.createKeyValueForObject((Map<String,Object>)req.get("attr"),(sldObject) -> {
             index.put(sldObject.getBelongObjectId(),sldObject);
         });
         List<String> valueObjectIdList = new ArrayList<>(index.keySet());
