@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * <p>
@@ -40,10 +41,10 @@ public class SldProtocolOpenRecordController {
     private SldObjectMapper sldObjectMapper;
 
     @Resource
-    private SldProtocolOpenRecordMapper sldInterfaceOpenRecordMapper;
+    private SldProtocolOpenRecordMapper sldProtocolOpenRecordMapper;
 
     @Resource
-    private SldProtocolSubOpenRecordMapper sldInterfaceSubOpenRecordMapper;
+    private SldProtocolSubOpenRecordMapper sldProtocolSubOpenRecordMapper;
 
     @Resource
     private SldObjectService sldObjectService;
@@ -57,7 +58,21 @@ public class SldProtocolOpenRecordController {
         Map<String, Object> columnMap = new HashMap<>();
         columnMap.put("protocol_open_record_id",(String)req.get("protocol_open_record_id"));
         columnMap.put("is_need_config",2);
-        List<SldProtocolSubOpenRecord> retData = sldInterfaceSubOpenRecordMapper.selectByMap(columnMap);
+        List<SldProtocolSubOpenRecord> needConfigObject = sldProtocolSubOpenRecordMapper.selectByMap(columnMap);
+        List<String> needConifgObjectIds = needConfigObject.stream().map(p->p.getObjectId()).collect(Collectors.toList());
+        List<SldObject> needConfigObjectInfos = sldObjectMapper.selectBatchIds(needConifgObjectIds);
+        List<String> needConifgBelongObjectIds = needConfigObjectInfos.stream().map(p->p.getBelongObjectId()).collect(Collectors.toList());
+        List<SldObject> needConfigBelongObjectInfos = sldObjectMapper.selectBatchIds(needConifgBelongObjectIds);
+        Map<String,SldObject> belongObjectIndex = needConfigBelongObjectInfos.stream().collect(Collectors.toMap(p->p.getId(),p->p));
+        List<Map<String,Object>> retData = new ArrayList<>();
+        for(SldObject oneConfig : needConfigObjectInfos){
+            Map<String,Object> elm = new HashMap<>();
+            SldObject belongObject = belongObjectIndex.get(oneConfig.getBelongObjectId());
+            elm.put("objectId", oneConfig.getId());
+            elm.put("belongObjectId",oneConfig.getBelongObjectId());
+            elm.put("belongObjectName",belongObject.getObjectCode());
+            retData.add(elm);
+        }
         return AjaxResult.success(retData);
     }
 
@@ -71,7 +86,7 @@ public class SldProtocolOpenRecordController {
     @Transactional(rollbackFor = Exception.class)
     public AjaxResult releaseProtocol(@RequestBody Map<String,Object> req) throws Exception{
         SldProtocolOpenRecord openRecord = ObjectConverter.convertToInterfaceOpenRecordObject((Map<String,Object>)req.get("openRecord"));
-        sldInterfaceOpenRecordMapper.insert(openRecord);
+        sldProtocolOpenRecordMapper.insert(openRecord);
         Map<String,SldObject> index = new HashedMap();
         sldObjectService.createKeyValueForObject((Map<String,Object>)req.get("attr"),(sldObject) -> {
             index.put(sldObject.getBelongObjectId(),sldObject);
@@ -90,7 +105,7 @@ public class SldProtocolOpenRecordController {
                     elm.setObjectId(keyObject.getId());
                     elm.setIsNeedConfig(1L);
                 }
-                sldInterfaceSubOpenRecordMapper.insert(elm);
+                sldProtocolSubOpenRecordMapper.insert(elm);
             }
         }
         return AjaxResult.success();
