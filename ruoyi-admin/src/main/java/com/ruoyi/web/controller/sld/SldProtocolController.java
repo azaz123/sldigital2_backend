@@ -49,48 +49,6 @@ public class SldProtocolController {
         dbWrite.setObjectStruct(1L);
         dbWrite.setClassCode("protocol");
         sldObjectMapper.insert(dbWrite);
-
-//        SldObject dbAddress = new SldObject();
-//        dbAddress.setObjectCode("dbAddress");
-//        dbAddress.setObjectStruct(1L);
-//        dbAddress.setBelongObjectId(dbWrite.getId());
-//        sldObjectMapper.insert(dbAddress);
-//
-//        SldObject dbUser = new SldObject();
-//        dbUser.setObjectCode("dbUser");
-//        dbUser.setObjectStruct(1L);
-//        dbUser.setBelongObjectId(dbWrite.getId());
-//        sldObjectMapper.insert(dbUser);
-//
-//        SldObject dbPassWord = new SldObject();
-//        dbPassWord.setObjectCode("dbPassWord");
-//        dbPassWord.setObjectStruct(1L);
-//        dbPassWord.setBelongObjectId(dbWrite.getId());
-//        sldObjectMapper.insert(dbPassWord);
-//
-//        SldObject dbSchema = new SldObject();
-//        dbSchema.setObjectCode("dbSchema");
-//        dbSchema.setObjectStruct(1L);
-//        dbSchema.setBelongObjectId(dbWrite.getId());
-//        sldObjectMapper.insert(dbSchema);
-//
-//        SldObject dbAction = new SldObject();
-//        dbAction.setObjectCode("dbAction");
-//        dbAction.setObjectStruct(1L);
-//        dbAction.setBelongObjectId(dbWrite.getId());
-//        sldObjectMapper.insert(dbAction);
-//
-//        SldObject dbReqObject = new SldObject();
-//        dbReqObject.setObjectCode("dbReqObject");
-//        dbReqObject.setObjectStruct(1L);
-//        dbReqObject.setBelongObjectId(dbWrite.getId());
-//        sldObjectMapper.insert(dbReqObject);
-//
-//        SldObject dbRetObject = new SldObject();
-//        dbRetObject.setObjectCode("dbRetObject");
-//        dbRetObject.setObjectStruct(1L);
-//        dbRetObject.setBelongObjectId(dbWrite.getId());
-//        sldObjectMapper.insert(dbRetObject);
         return AjaxResult.success();
     }
 

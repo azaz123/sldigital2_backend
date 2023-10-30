@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -46,6 +47,19 @@ public class SldProtocolOpenRecordController {
 
     @Resource
     private SldObjectService sldObjectService;
+
+    /**
+     * 获取协议需要配置的对象
+     */
+    @PostMapping("/get-protocol-need-config-object")
+    @Transactional(rollbackFor = Exception.class)
+    public AjaxResult getProtocolNeedConfigObject(@RequestBody Map<String,Object> req) throws Exception{
+        Map<String, Object> columnMap = new HashMap<>();
+        columnMap.put("protocol_open_record_id",(String)req.get("protocol_open_record_id"));
+        columnMap.put("is_need_config",2);
+        List<SldProtocolSubOpenRecord> retData = sldInterfaceSubOpenRecordMapper.selectByMap(columnMap);
+        return AjaxResult.success(retData);
+    }
 
 
 
