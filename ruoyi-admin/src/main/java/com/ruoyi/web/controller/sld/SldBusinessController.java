@@ -4,7 +4,9 @@ package com.ruoyi.web.controller.sld;
 import com.ruoyi.common.core.domain.AjaxResult;
 import com.sld.business.converter.ObjectConverter;
 import com.sld.business.domain.SldBusiness;
+import com.sld.business.domain.SldBusinessConfig;
 import com.sld.business.domain.SldObject;
+import com.sld.business.mapper.SldBusinessConfigMapper;
 import com.sld.business.mapper.SldBusinessMapper;
 import com.sld.business.mapper.SldObjectMapper;
 import com.sld.business.service.SldObjectService;
@@ -30,6 +32,9 @@ import java.util.Map;
 @Controller
 @RequestMapping("/sld-business")
 public class SldBusinessController {
+
+    @Resource
+    private SldBusinessConfigMapper sldBusinessConfigMapper;
 
     @Resource
     private SldBusinessMapper sldBusinessMapper;
@@ -70,7 +75,12 @@ public class SldBusinessController {
             Map<String,Object> addAttrForObject = new HashMap<>();
             addAttrForObject.put("mainObject",rootValueObject.getId());
             addAttrForObject.put("attrObject", ObjectConverter.convertToMap(configValueObject));
-            sldObjectService.createAttrForObject(addAttrForObject);
+            SldObject attrObject = sldObjectService.createAttrForObject(addAttrForObject);
+
+            SldBusinessConfig businessConifg = new SldBusinessConfig();
+            businessConifg.setBusinessId(business.getId());
+            businessConifg.setObjectId(attrObject.getId());
+            sldBusinessConfigMapper.insert(businessConifg);
         }
         return AjaxResult.success();
     }
