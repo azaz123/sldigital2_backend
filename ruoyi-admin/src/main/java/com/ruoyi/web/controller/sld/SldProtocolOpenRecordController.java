@@ -88,9 +88,10 @@ public class SldProtocolOpenRecordController {
         SldProtocolOpenRecord openRecord = ObjectConverter.convertToInterfaceOpenRecordObject((Map<String,Object>)req.get("openRecord"));
         sldProtocolOpenRecordMapper.insert(openRecord);
         Map<String,SldObject> index = new HashedMap();
-        sldObjectService.createKeyValueForObject((Map<String,Object>)req.get("attr"),(sldObject) -> {
+        sldObjectService.createKeyValueForObject((Map<String,Object>)req.get("kvAttr"),(sldObject) -> {
             index.put(sldObject.getBelongObjectId(),sldObject);
         });
+        sldObjectService.createAttrForObject((Map<String,Object>)req.get("attr"));
         List<String> valueObjectIdList = new ArrayList<>(index.keySet());
         List<SldObject> valueObjects = sldObjectMapper.selectBatchIds(valueObjectIdList);
         for(SldObject oneValue : valueObjects){

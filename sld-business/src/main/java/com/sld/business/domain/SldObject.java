@@ -43,6 +43,9 @@ public class SldObject extends Model<SldObject> {
     @TableField("class_code")
     private String classCode;
 
+    @TableField("path_code")
+    private String pathCode;
+
     @TableField("controll_param")
     private Long controllParam;
 

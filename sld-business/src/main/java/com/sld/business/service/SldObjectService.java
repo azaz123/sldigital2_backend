@@ -3,6 +3,7 @@ package com.sld.business.service;
 import com.sld.business.domain.SldObject;
 import com.baomidou.mybatisplus.extension.service.IService;
 
+import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 
@@ -22,4 +23,8 @@ public interface SldObjectService extends IService<SldObject> {
     public SldObject createListObject(Map<String,Object> req);
 
     public SldObject createKeyValueForObject(Map<String,Object> req, Consumer<SldObject> callback);
+
+    public List<SldObject> listSubObjects(String id,List<String> excludeIds);
+
+    public Map<SldObject,SldObject> getKeyValueObject(String id);
 }

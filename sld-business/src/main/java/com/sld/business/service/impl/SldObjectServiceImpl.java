@@ -1,5 +1,8 @@
 package com.sld.business.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.AES;
+import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.sld.business.converter.ObjectConverter;
 import com.sld.business.domain.SldObject;
 import com.sld.business.mapper.SldObjectMapper;
@@ -8,8 +11,12 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 /**
  * <p>
@@ -54,6 +61,39 @@ public class SldObjectServiceImpl extends ServiceImpl<SldObjectMapper, SldObject
         sldObjectMapper.insert(listObject);
         return listObject;
     }
+
+    @Override
+    public List<SldObject> listSubObjects(String id,List<String> excludeIds){
+        QueryWrapper<SldObject> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("belong_object_id",id);
+        if(CollectionUtils.isNotEmpty(excludeIds)){
+            queryWrapper.in("id",excludeIds);
+        }
+        List<SldObject> subObjects = sldObjectMapper.selectList(queryWrapper);
+        if(CollectionUtils.isEmpty(subObjects)){
+            return new ArrayList<>();
+        }
+        return subObjects;
+    }
+
+    @Override
+    public Map<SldObject,SldObject> getKeyValueObject(String id){
+        Map<SldObject,SldObject> retData = new HashMap<>();
+        List<SldObject> keyObjects = listSubObjects(id,null);
+        List<String> keyObjectIds = keyObjects.stream().map(p->p.getId()).collect(Collectors.toList());
+        QueryWrapper<SldObject> queryWrapper = new QueryWrapper<>();
+        queryWrapper.in("belong_object_id",keyObjectIds);
+        List<SldObject> valueObjectInfos = sldObjectMapper.selectList(queryWrapper);
+        Map<String,SldObject> keyObjectIndex = keyObjects.stream().collect(Collectors.toMap(p->p.getId(),p->p));
+        Map<String, SldObject> valueObjectIndex = valueObjectInfos.stream().collect(Collectors.toMap(p->p.getBelongObjectId(),p->p));
+        for(Map.Entry<String,SldObject> one : keyObjectIndex.entrySet()){
+            if(valueObjectIndex.containsKey(one.getKey())){
+                SldObject value = valueObjectIndex.get(one.getKey());
+                retData.put(one.getValue(),value);
+            }
+        }
+        return retData;
+     }
 
 
     @Override

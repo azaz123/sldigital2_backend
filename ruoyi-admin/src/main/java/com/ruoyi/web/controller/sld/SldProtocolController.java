@@ -53,6 +53,21 @@ public class SldProtocolController {
     }
 
     /**
+     * 上架数据库批量写数据协议对象
+     */
+    @PostMapping("/create-db-batch-write-protocol")
+    @Transactional(rollbackFor = Exception.class)
+    public AjaxResult createDbBatchWriteProtocol(@RequestBody Map<String,Object> req) throws Exception{
+        //创建db对象
+        SldObject dbWrite = new SldObject();
+        dbWrite.setObjectCode("dbBatchWrite");
+        dbWrite.setObjectStruct(1L);
+        dbWrite.setClassCode("protocol");
+        sldObjectMapper.insert(dbWrite);
+        return AjaxResult.success();
+    }
+
+    /**
      * 上架http协议对象
      */
     @PostMapping("/create-http-protocol")
@@ -65,6 +80,14 @@ public class SldProtocolController {
         http.setObjectStruct(1L);
         http.setClassCode("protocol");
         sldObjectMapper.insert(http);
+
+        //创建baseInfo对象
+        SldObject baseInfo = new SldObject();
+        baseInfo.setObjectCode("baseInfo");
+        baseInfo.setObjectStruct(1L);
+        baseInfo.setBelongObjectId(http.getId());
+        sldObjectMapper.insert(baseInfo);
+
         //创建header对象
         SldObject header = new SldObject();
         header.setObjectCode("header");
