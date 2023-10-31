@@ -26,7 +26,7 @@ public class SldProtocolController {
     /**
      * 上架数据库查数据协议对象
      */
-    @PostMapping("/create-db-query-protocol")
+    @PostMapping("/create-db-protocol")
     @Transactional(rollbackFor = Exception.class)
     public AjaxResult createDbQueryProtocol(@RequestBody Map<String,Object> req) throws Exception{
         QueryWrapper<SldObject> queryWrapper = new QueryWrapper<>();
