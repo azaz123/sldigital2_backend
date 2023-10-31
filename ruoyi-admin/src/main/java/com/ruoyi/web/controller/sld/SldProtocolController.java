@@ -30,40 +30,10 @@ public class SldProtocolController {
     public AjaxResult createDbQueryProtocol(@RequestBody Map<String,Object> req) throws Exception{
         //创建db对象
         SldObject dbQuery = new SldObject();
-        dbQuery.setObjectCode("dbQuery");
+        dbQuery.setObjectCode("db");
         dbQuery.setObjectStruct(1L);
         dbQuery.setClassCode("protocol");
         sldObjectMapper.insert(dbQuery);
-        return AjaxResult.success();
-    }
-
-    /**
-     * 上架数据库写数据协议对象
-     */
-    @PostMapping("/create-db-write-protocol")
-    @Transactional(rollbackFor = Exception.class)
-    public AjaxResult createDbWriteProtocol(@RequestBody Map<String,Object> req) throws Exception{
-        //创建db对象
-        SldObject dbWrite = new SldObject();
-        dbWrite.setObjectCode("dbWrite");
-        dbWrite.setObjectStruct(1L);
-        dbWrite.setClassCode("protocol");
-        sldObjectMapper.insert(dbWrite);
-        return AjaxResult.success();
-    }
-
-    /**
-     * 上架数据库批量写数据协议对象
-     */
-    @PostMapping("/create-db-batch-write-protocol")
-    @Transactional(rollbackFor = Exception.class)
-    public AjaxResult createDbBatchWriteProtocol(@RequestBody Map<String,Object> req) throws Exception{
-        //创建db对象
-        SldObject dbWrite = new SldObject();
-        dbWrite.setObjectCode("dbBatchWrite");
-        dbWrite.setObjectStruct(1L);
-        dbWrite.setClassCode("protocol");
-        sldObjectMapper.insert(dbWrite);
         return AjaxResult.success();
     }
 

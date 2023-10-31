@@ -1,6 +1,7 @@
 package com.sld.business.service.impl;
 
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
+import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.sld.business.domain.SldObject;
@@ -154,10 +155,9 @@ public class SldProtocolExecutorServiceImpl implements SldProtocolExecutorServic
     }
 
 
-    private Map<String, Object> excuteDbBatchWriteProtocol(SldObject dbBatchWrite, List<SldObject> tenantConfigObjects, Map<String, Object> inputData) {
+    private  Map<String, Object> excuteDbBatchWriteProtocol(SldObject dbBatchWrite, List<SldObject> tenantConfigObjects, Map<String, Object> inputData) {
+        Map<String, Object> resultMap = new HashMap<>();
         Map<String, Object> dbInfo = getKvInfo(dbBatchWrite.getId(), tenantConfigObjects);
-        List<Map<String, Object>> dataList = (List<Map<String, Object>>) inputData.get("dataList");
-
         // Extract database connection information
         String dbAddress = (String) dbInfo.get("dbAddress");
         String dbPort = (String) dbInfo.get("dbPort");
@@ -165,55 +165,174 @@ public class SldProtocolExecutorServiceImpl implements SldProtocolExecutorServic
         String dbTable = (String) dbInfo.get("dbTable");
         String dbUser = (String) dbInfo.get("dbUser");
         String dbPassword = (String) dbInfo.get("dbPassword");
+        String dbOperType = (String) dbInfo.get("dbOperType");
 
-        // JDBC connection and statement
-        Connection connection = null;
-        PreparedStatement preparedStatement = null;
-        Map<String, Object> resultMap = new HashMap<>();
+        if (dbOperType.equals("batchWrite")) {
+            String srcFieldNameForListData = (String) dbInfo.get("srcFieldNameForListData");
+            // Batch write logic
+            List<Map<String, Object>> dataList = (List<Map<String, Object>>) inputData.get(srcFieldNameForListData);
+            // JDBC connection and statement
+            Connection connection = null;
+            PreparedStatement preparedStatement = null;
 
-        try {
-            // Create JDBC connection
-            String jdbcUrl = "jdbc:mysql://" + dbAddress + ":" + dbPort + "/" + dbSchema;
-            connection = DriverManager.getConnection(jdbcUrl, dbUser, dbPassword);
+            try {
+                // Create JDBC connection
+                String jdbcUrl = "jdbc:mysql://" + dbAddress + ":" + dbPort + "/" + dbSchema;
+                connection = DriverManager.getConnection(jdbcUrl, dbUser, dbPassword);
 
-            // Create SQL statement for batch insert
-            String insertSql = generateBatchInsertSql(dbTable, dataList.get(0));
-            preparedStatement = connection.prepareStatement(insertSql);
+                // Create SQL statement for batch insert
+                String insertSql = generateBatchInsertSql(dbTable, dataList.get(0));
+                preparedStatement = connection.prepareStatement(insertSql);
 
-            // Set auto-commit to false for batch processing
-            connection.setAutoCommit(false);
+                // Set auto-commit to false for batch processing
+                connection.setAutoCommit(false);
 
-            // Iterate over dataList and add batch parameters
-            for (Map<String, Object> data : dataList) {
-                setPreparedStatementParameters(preparedStatement, data);
-                preparedStatement.addBatch();
+                // Iterate over dataList and add batch parameters
+                for (Map<String, Object> data : dataList) {
+                    setPreparedStatementParameters(preparedStatement, data);
+                    preparedStatement.addBatch();
+                }
+
+                // Execute the batch insert
+                int[] batchResult = preparedStatement.executeBatch();
+
+                // Commit the changes
+                connection.commit();
+
+                // Convert batch result to Map
+                resultMap.put("batchResult", Arrays.asList(batchResult));
+
+            } catch (SQLException e) {
+                // Handle any exceptions
+                e.printStackTrace();
+            } finally {
+                // Close statement and connection
+                try {
+                    if (preparedStatement != null)
+                        preparedStatement.close();
+                    if (connection != null)
+                        connection.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+        } else if (dbOperType.equals("dbQuery")) {
+            // Query logic
+            String srcFieldNameForListData = (String) dbInfo.get("srcFieldNameForListData");
+            String dbFieldNameForBatchQuery = (String) dbInfo.get("dbFieldNameForBatchQuery");
+            List<Object> dataList = (List<Object>) inputData.get("srcFieldNameForListData");
+
+            Map<String, Object> eqFieldList = new HashMap<>();
+            String srcFieldNameForEqFieldList = (String) dbInfo.get("srcFieldNameForEqFieldList");
+            if(srcFieldNameForEqFieldList!=null && !srcFieldNameForEqFieldList.isEmpty()){
+                eqFieldList = (Map<String, Object>) inputData.get(srcFieldNameForEqFieldList);
+            }else{
+                String eqFieldInfo = (String) dbInfo.get("eqFieldInfo");
+                if(StringUtils.isNotBlank(eqFieldInfo)){
+                    eqFieldList = convertSplitorStringToMapData(eqFieldInfo);
+                }
             }
 
-            // Execute the batch insert
-            int[] batchResult = preparedStatement.executeBatch();
+            Map<String, Object> likeFieldList = new HashMap<>();
+            String srcFieldNameForLikeFieldList = (String) dbInfo.get("srcFieldNameForLikeFieldList");
+            if(srcFieldNameForLikeFieldList!=null && !srcFieldNameForLikeFieldList.isEmpty()){
+                likeFieldList = (Map<String, Object>) inputData.get("srcFieldNameForEqFieldList");
+            }else{
+                String likeFieldInfo = (String) dbInfo.get("likeFieldInfo");
+                if(StringUtils.isNotBlank(likeFieldInfo)){
+                    likeFieldList = convertSplitorStringToMapData(likeFieldInfo);
+                }
+            }
 
-            // Commit the changes
-            connection.commit();
+            //排序处理，待增加
 
-            // Convert batch result to Map
-            resultMap.put("batchResult", Arrays.asList(batchResult));
+            // JDBC connection and statement
+            Connection connection = null;
+            PreparedStatement preparedStatement = null;
+            ResultSet resultSet = null;
 
-        } catch (SQLException e) {
-            // Handle any exceptions
-            e.printStackTrace();
-        } finally {
-            // Close statement and connection
             try {
-                if (preparedStatement != null)
-                    preparedStatement.close();
-                if (connection != null)
-                    connection.close();
+                // Create JDBC connection
+                String jdbcUrl = "jdbc:mysql://" + dbAddress + ":" + dbPort + "/" + dbSchema;
+                connection = DriverManager.getConnection(jdbcUrl, dbUser, dbPassword);
+
+                // Create SQL statement for batch query
+                String selectSql = generateBatchSelectSql(dbTable, eqFieldList, likeFieldList);
+                preparedStatement = connection.prepareStatement(selectSql);
+
+                // Set query parameters
+                int paramIndex = 1;
+                for (Map.Entry<String, Object> eqField : eqFieldList.entrySet()) {
+                    Object value = eqField.getValue();
+                    preparedStatement.setObject(paramIndex++, value);
+                }
+
+                for (Map.Entry<String, Object> likeField : likeFieldList.entrySet()) {
+                    Object value = likeField.getValue();
+                    preparedStatement.setObject(paramIndex++, "%" + value + "%");
+                }
+
+                // Execute the query
+                resultSet = preparedStatement.executeQuery();
+
+                // Process the query result
+                List<Map<String, Object>> retList = new ArrayList<>();
+                ResultSetMetaData metaData = resultSet.getMetaData();
+                int columnCount = metaData.getColumnCount();
+                while (resultSet.next()) {
+                    Map<String, Object> row = new HashMap<>();
+                    for (int i = 1; i <= columnCount; i++) {
+                        String columnName = metaData.getColumnName(i);
+                        Object value = resultSet.getObject(i);
+                        row.put(columnName, value);
+                    }
+                    retList.add(row);
+                }
+
+                // Set the query result to the output parameter
+                inputData.put("retList", retList);
+
             } catch (SQLException e) {
+                // Handle any exceptions
                 e.printStackTrace();
+            } finally {
+                // Close result set, statement, and connection
+                try {
+                    if (resultSet != null)
+                        resultSet.close();
+                    if (preparedStatement != null)
+                        preparedStatement.close();
+                    if (connection != null)
+                        connection.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
             }
         }
 
         return resultMap;
+    }
+
+    private static String generateBatchSelectSql(String tableName, Map<String, Object> eqFieldList, Map<String, Object> likeFieldList) {
+        StringBuilder sqlBuilder = new StringBuilder();
+        sqlBuilder.append("SELECT * FROM ").append(tableName).append(" WHERE ");
+
+        // Append equal conditions
+        for (Map.Entry<String, Object> eqField : eqFieldList.entrySet()) {
+            String columnName = eqField.getKey();
+            sqlBuilder.append(columnName).append(" = ? AND ");
+        }
+
+        // Append like conditions
+        for (Map.Entry<String, Object> likeField : likeFieldList.entrySet()) {
+            String columnName = likeField.getKey();
+            sqlBuilder.append(columnName).append(" LIKE ? AND ");
+        }
+
+        // Remove the trailing "AND"
+        sqlBuilder.delete(sqlBuilder.length() - 5, sqlBuilder.length());
+
+        return sqlBuilder.toString();
     }
 
     private String generateBatchInsertSql(String tableName, Map<String, Object> data) {
@@ -255,6 +374,18 @@ public class SldProtocolExecutorServiceImpl implements SldProtocolExecutorServic
         return sb.toString();
     }
 
+    private Map<String,Object> convertSplitorStringToMapData(String input){
+        Map<String, Object> map = new HashMap<>();
+        String[] keyValuePairs = input.split(",");
+
+        for (int i = 0; i < keyValuePairs.length; i += 2) {
+            String key = keyValuePairs[i];
+            String value = keyValuePairs[i + 1];
+            map.put(key, value);
+        }
+        return map;
+    }
+
 
 
 
@@ -263,7 +394,7 @@ public class SldProtocolExecutorServiceImpl implements SldProtocolExecutorServic
     public Map<String,Object> excute(SldObject protocol,List<SldObject> tenantConfigObjects,Map<String,Object> inputData) {
         if(protocol.getObjectCode().equals("http")){
             return excuteHttpProtocol(protocol,tenantConfigObjects,inputData);
-        }else if(protocol.getObjectCode().equals("dbBatchWrite")){
+        }else if(protocol.getObjectCode().equals("db")){
             return excuteDbBatchWriteProtocol(protocol,tenantConfigObjects,inputData);
         }
         return new HashMap<>();
