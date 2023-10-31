@@ -1,6 +1,7 @@
 package com.ruoyi.web.controller.sld;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.ruoyi.common.core.domain.AjaxResult;
 import com.sld.business.domain.SldObject;
 import com.sld.business.mapper.SldObjectMapper;
@@ -28,11 +29,19 @@ public class SldProtocolController {
     @PostMapping("/create-db-query-protocol")
     @Transactional(rollbackFor = Exception.class)
     public AjaxResult createDbQueryProtocol(@RequestBody Map<String,Object> req) throws Exception{
+        QueryWrapper<SldObject> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("class_code","protocol");
+        queryWrapper.eq("object_code","db");
+        List<SldObject> exisitObject = sldObjectMapper.selectList(queryWrapper);
+        if(CollectionUtils.isNotEmpty(exisitObject)){
+            return AjaxResult.error("已经存在db协议");
+        }
         //创建db对象
         SldObject dbQuery = new SldObject();
         dbQuery.setObjectCode("db");
         dbQuery.setObjectStruct(1L);
         dbQuery.setClassCode("protocol");
+        dbQuery.setBelongObjectId("-1");
         sldObjectMapper.insert(dbQuery);
         return AjaxResult.success();
     }
@@ -44,11 +53,19 @@ public class SldProtocolController {
     @Transactional(rollbackFor = Exception.class)
     public AjaxResult createHttpProtocol(@RequestBody Map<String,Object> req) throws Exception
     {
+        QueryWrapper<SldObject> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("class_code","protocol");
+        queryWrapper.eq("object_code","http");
+        List<SldObject> exisitObject = sldObjectMapper.selectList(queryWrapper);
+        if(CollectionUtils.isNotEmpty(exisitObject)){
+            return AjaxResult.error("已经存在http协议");
+        }
         //创建http对象
         SldObject http = new SldObject();
         http.setObjectCode("http");
         http.setObjectStruct(1L);
         http.setClassCode("protocol");
+        http.setBelongObjectId("-1");
         sldObjectMapper.insert(http);
 
         //创建baseInfo对象
