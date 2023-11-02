@@ -4,14 +4,10 @@ package com.ruoyi.web.controller.sld;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.ruoyi.common.core.domain.AjaxResult;
 import com.sld.business.converter.ObjectConverter;
-import com.sld.business.domain.SldBusiness;
-import com.sld.business.domain.SldBusinessConfig;
-import com.sld.business.domain.SldObject;
-import com.sld.business.domain.SldProtocolSubOpenRecord;
-import com.sld.business.mapper.SldBusinessConfigMapper;
-import com.sld.business.mapper.SldBusinessMapper;
-import com.sld.business.mapper.SldObjectMapper;
+import com.sld.business.domain.*;
+import com.sld.business.mapper.*;
 import com.sld.business.service.SldObjectService;
+import com.sld.business.service.SldProtocolExecutorService;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -25,6 +21,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * <p>
@@ -49,6 +46,16 @@ public class SldBusinessController {
 
     @Resource
     private SldObjectMapper sldObjectMapper;
+
+    @Resource
+    private SldProtocolOpenRecordMapper sldProtocolOpenRecordMapper;
+
+    @Resource
+    private SldProtocolSubOpenRecordMapper sldProtocolSubOpenRecordMapper;
+
+    @Resource
+    private SldProtocolExecutorService sldProtocolExecutorService;
+
 
     /**
      * 创建业务
@@ -93,6 +100,33 @@ public class SldBusinessController {
             elm.setObjectId(one.getId());
             sldBusinessConfigMapper.insert(elm);
         }
+        return AjaxResult.success();
+    }
+
+    /**
+     * 查询业务对象
+     */
+    @PostMapping("/excute-business")
+    @Transactional(rollbackFor = Exception.class)
+    public AjaxResult excuteBusiness(@RequestBody Map<String,Object> req) throws Exception
+    {
+        String businessId = (String)req.get("businessId");
+        SldBusiness business = sldBusinessMapper.selectById(businessId);
+        Map<String,Object> sldBusinessConifgReq = new HashMap<>();
+        sldBusinessConifgReq.put("business_id",business.getId());
+        List<SldBusinessConfig> busConifgList = sldBusinessConfigMapper.selectByMap(sldBusinessConifgReq);
+        SldProtocolOpenRecord sldProtocolOpenRecord = sldProtocolOpenRecordMapper.selectById(business.getProtocolOpenRecordId());
+        SldObject protocolObject = sldObjectMapper.selectById(sldProtocolOpenRecord.getProtocolObjectId());
+        Map<String,Object> spsorReq = new HashMap<>();
+        spsorReq.put("protocol_open_record_id",business.getProtocolOpenRecordId());
+        List<SldProtocolSubOpenRecord> spsorList = sldProtocolSubOpenRecordMapper.selectByMap(spsorReq);
+        List<String> tenantProtocolObjectIds = spsorList.stream().map(p->p.getObjectId()).collect(Collectors.toList());
+        List<String> tenantConifgObjectIds = busConifgList.stream().map(p->p.getObjectId()).collect(Collectors.toList());
+        List<String> mergedObjects = new ArrayList<>();
+        mergedObjects.addAll(tenantProtocolObjectIds);
+        mergedObjects.addAll(tenantConifgObjectIds);
+        List<SldObject> objects = sldObjectMapper.selectBatchIds(mergedObjects);
+        sldProtocolExecutorService.excute(protocolObject,objects,new HashMap<>());
         return AjaxResult.success();
     }
 }
