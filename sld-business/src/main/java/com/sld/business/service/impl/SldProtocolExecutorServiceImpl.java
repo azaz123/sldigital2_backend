@@ -180,10 +180,8 @@ public class SldProtocolExecutorServiceImpl implements SldProtocolExecutorServic
                     // Process the successful response
                     // Assuming the response is in JSON format
                     String responseBody = response.body().string();
-                    String jsonStr = new Gson().toJson(responseBody, new TypeToken<Map<String, Object>>() {}.getType());
-                    String cropListStr = (String)retObject.get("cropList");
-
-                    retData = parseJson(retObject,jsonStr);
+                    retData = new Gson().fromJson(responseBody, new TypeToken<Map<String, Object>>() {}.getType());
+//                    retData = parseJson(retObject,jsonStr);
                     return retData;
                 } else {
                     // Handle the error response
