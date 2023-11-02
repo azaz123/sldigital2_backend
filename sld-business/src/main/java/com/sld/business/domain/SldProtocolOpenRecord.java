@@ -7,6 +7,8 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import java.time.LocalDateTime;
 import com.baomidou.mybatisplus.annotation.TableField;
 import java.io.Serializable;
+import java.util.Date;
+
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
@@ -52,7 +54,7 @@ public class SldProtocolOpenRecord extends Model<SldProtocolOpenRecord> {
      * 创建时间
      */
     @TableField("create_date")
-    private LocalDateTime createDate;
+    private Date createDate;
 
 
     @Override

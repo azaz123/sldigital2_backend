@@ -40,15 +40,23 @@ public class SldObjectServiceImpl extends ServiceImpl<SldObjectMapper, SldObject
     }
 
     @Override
-    public SldObject createAttrForObject(Map<String, Object> req) {
-        String objectId = (String)req.get("mainObject");
-        Map<String,Object> attrObjectMap = (Map<String,Object>)req.get("attrObject");
-        SldObject attrObject = ObjectConverter.convertToSldObject(attrObjectMap);
-        SldObject mainObject = sldObjectMapper.selectById(objectId);
-        attrObject.setBelongObjectId(mainObject.getId());
-        sldObjectMapper.insert(attrObject);
-        return attrObject;
+    public List<SldObject> createAttrForObject(Map<String, Object> req) {
+        List<SldObject> retData = new ArrayList<>();
+        for(Map.Entry<String, Object> one : req.entrySet()){
+            String mainObjectId = one.getKey();
+            SldObject mainObject = sldObjectMapper.selectById(mainObjectId);
+            SldObject valueObject = new SldObject();
+            valueObject.setBelongObjectId(mainObjectId);
+            valueObject.setObjectValueType("string");
+            valueObject.setObjectCode(mainObject.getObjectCode() + "_value");
+            valueObject.setObjectStruct(1L);
+            valueObject.setObjectValue((String)one.getValue());
+            sldObjectMapper.insert(valueObject);
+            retData.add(valueObject);
+        }
+        return retData;
     }
+
 
     @Override
     public SldObject createListObject(Map<String, Object> req) {
@@ -63,11 +71,11 @@ public class SldObjectServiceImpl extends ServiceImpl<SldObjectMapper, SldObject
     }
 
     @Override
-    public List<SldObject> listSubObjects(String id,List<String> excludeIds){
+    public List<SldObject> listSubObjects(String id,List<String> includeIds){
         QueryWrapper<SldObject> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("belong_object_id",id);
-        if(CollectionUtils.isNotEmpty(excludeIds)){
-            queryWrapper.in("id",excludeIds);
+        if(CollectionUtils.isNotEmpty(includeIds)){
+            queryWrapper.in("id",includeIds);
         }
         List<SldObject> subObjects = sldObjectMapper.selectList(queryWrapper);
         if(CollectionUtils.isEmpty(subObjects)){
@@ -77,12 +85,15 @@ public class SldObjectServiceImpl extends ServiceImpl<SldObjectMapper, SldObject
     }
 
     @Override
-    public Map<SldObject,SldObject> getKeyValueObject(String id){
+    public Map<SldObject,SldObject> getKeyValueObject(String id,List<String> incluedIds){
         Map<SldObject,SldObject> retData = new HashMap<>();
         List<SldObject> keyObjects = listSubObjects(id,null);
         List<String> keyObjectIds = keyObjects.stream().map(p->p.getId()).collect(Collectors.toList());
         QueryWrapper<SldObject> queryWrapper = new QueryWrapper<>();
         queryWrapper.in("belong_object_id",keyObjectIds);
+        if(CollectionUtils.isNotEmpty(incluedIds)){
+            queryWrapper.in("id",incluedIds);
+        }
         List<SldObject> valueObjectInfos = sldObjectMapper.selectList(queryWrapper);
         Map<String,SldObject> keyObjectIndex = keyObjects.stream().collect(Collectors.toMap(p->p.getId(),p->p));
         Map<String, SldObject> valueObjectIndex = valueObjectInfos.stream().collect(Collectors.toMap(p->p.getBelongObjectId(),p->p));
@@ -97,27 +108,31 @@ public class SldObjectServiceImpl extends ServiceImpl<SldObjectMapper, SldObject
 
 
     @Override
-    public SldObject createKeyValueForObject(Map<String, Object> req, Consumer<SldObject> callback) {
-        String objectId = (String)req.get("mainObject");
+    public List<SldObject> createKeyValueForObject(Map<String, Object> req) {
+        List<SldObject> retList = new ArrayList<>();
         for(Map.Entry<String,Object> one : req.entrySet()){
-            if(one.getKey().equals("mainObject")){
-                continue;
-            }
-            SldObject keyObject = new SldObject();
-            keyObject.setObjectCode(one.getKey());
-            keyObject.setObjectStruct(1L);
-            keyObject.setBelongObjectId(objectId);
-            sldObjectMapper.insert(keyObject);
+            String mainObjectId = one.getKey();
+            Map<String,Object> kvInfo = (Map<String,Object>)one.getValue();
+            for(Map.Entry<String,Object> kvOne: kvInfo.entrySet()){
+                SldObject keyObject = new SldObject();
+                keyObject.setObjectCode(kvOne.getKey());
+                keyObject.setObjectStruct(1L);
+                keyObject.setBelongObjectId(mainObjectId);
+                sldObjectMapper.insert(keyObject);
+                retList.add(keyObject);
 
-            SldObject valueObject = new SldObject();
-            valueObject.setObjectCode(one.getKey() + "value");
-            valueObject.setObjectStruct(1L);
-            valueObject.setObjectValue((String)one.getValue());
-            valueObject.setObjectValueType("string");
-            valueObject.setBelongObjectId(keyObject.getId());
-            sldObjectMapper.insert(valueObject);
+                SldObject valueObject = new SldObject();
+                valueObject.setObjectCode(kvOne.getKey() + "_value");
+                valueObject.setObjectStruct(1L);
+                valueObject.setObjectValue((String)kvOne.getValue());
+                valueObject.setObjectValueType("string");
+                valueObject.setBelongObjectId(keyObject.getId());
+                sldObjectMapper.insert(valueObject);
+                retList.add(valueObject);
+            }
+
         }
-        return null;
+        return retList;
     }
 
 }

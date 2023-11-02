@@ -19,10 +19,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.time.LocalDateTime;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -77,6 +75,72 @@ public class SldProtocolOpenRecordController {
     }
 
 
+    /**
+     * 更新协议
+     */
+    @PostMapping("/update-protocol")
+    @Transactional(rollbackFor = Exception.class)
+    public AjaxResult updateProtocol(@RequestBody Map<String,Object> req) throws Exception{
+        String openRecordId = (String)req.get("protoclOpenRecordId");
+        List<SldObject> addAttrObjects = new ArrayList<>();
+        if(req.containsKey("addAttr")){
+            addAttrObjects = sldObjectService.createAttrForObject((Map<String,Object>)req.get("addAttr"));
+        }
+
+        List<SldObject> addKvObjects = new ArrayList<>();
+        if(req.containsKey("addKvAttr")){
+            addKvObjects = sldObjectService.createKeyValueForObject((Map<String,Object>)req.get("addKvAttr"));
+        }
+
+        for(SldObject one : addKvObjects){
+            SldProtocolSubOpenRecord elm = new SldProtocolSubOpenRecord();
+            elm.setProtocolOpenRecordId(openRecordId);
+            if(one.getObjectValue()!=null && one.getObjectValue().equals("---")){
+                elm.setObjectId(one.getId());
+                elm.setIsNeedConfig(2L);
+            }else{
+                elm.setObjectId(one.getId());
+                elm.setIsNeedConfig(1L);
+            }
+            sldProtocolSubOpenRecordMapper.insert(elm);
+        }
+
+        for(SldObject one : addAttrObjects){
+            SldProtocolSubOpenRecord elm = new SldProtocolSubOpenRecord();
+            elm.setId(openRecordId);
+            if(one.getObjectValue()!=null && one.getObjectValue().equals("---")){
+                elm.setObjectId(one.getId());
+                elm.setIsNeedConfig(2L);
+            }else{
+                elm.setObjectId(one.getId());
+                elm.setIsNeedConfig(1L);
+            }
+            sldProtocolSubOpenRecordMapper.insert(elm);
+        }
+
+        if(req.containsKey("delAttr")){
+            List<String> delAttrIds = (List<String>)req.get("delAttr");
+            sldObjectMapper.deleteBatchIds(delAttrIds);
+            for(String one : delAttrIds){
+                Map<String,Object> delMap = new HashMap<>();
+                delMap.put("object_id",one);
+                sldProtocolSubOpenRecordMapper.deleteByMap(delMap);
+            }
+        }
+
+        if(req.containsKey("upValueAttr")){
+            Map<String,Object> upValueInfo = (Map<String,Object>)req.get("upValueAttr");
+            for(Map.Entry<String,Object> one : upValueInfo.entrySet()){
+                SldObject so = new SldObject();
+                so.setId(one.getKey());
+                so.setObjectValue((String)one.getValue());
+                sldObjectMapper.updateById(so);
+            }
+        }
+
+
+        return AjaxResult.success();
+    }
 
 
     /**
@@ -86,28 +150,41 @@ public class SldProtocolOpenRecordController {
     @Transactional(rollbackFor = Exception.class)
     public AjaxResult releaseProtocol(@RequestBody Map<String,Object> req) throws Exception{
         SldProtocolOpenRecord openRecord = ObjectConverter.convertToInterfaceOpenRecordObject((Map<String,Object>)req.get("openRecord"));
+        openRecord.setCreateDate(new Date());
         sldProtocolOpenRecordMapper.insert(openRecord);
         Map<String,SldObject> index = new HashedMap();
-        sldObjectService.createKeyValueForObject((Map<String,Object>)req.get("kvAttr"),(sldObject) -> {
-            index.put(sldObject.getBelongObjectId(),sldObject);
-        });
-        sldObjectService.createAttrForObject((Map<String,Object>)req.get("attr"));
-        List<String> valueObjectIdList = new ArrayList<>(index.keySet());
-        List<SldObject> valueObjects = sldObjectMapper.selectBatchIds(valueObjectIdList);
-        for(SldObject oneValue : valueObjects){
-            if(index.containsKey(oneValue.getId())){
-                SldObject keyObject = index.get(oneValue.getId());
-                SldProtocolSubOpenRecord elm = new SldProtocolSubOpenRecord();
-                elm.setId(openRecord.getId());
-                if(oneValue.getObjectValue()!=null && oneValue.getObjectValue().equals("---")){
-                    elm.setObjectId(keyObject.getId());
-                    elm.setIsNeedConfig(2L);
-                }else{
-                    elm.setObjectId(keyObject.getId());
-                    elm.setIsNeedConfig(1L);
-                }
-                sldProtocolSubOpenRecordMapper.insert(elm);
+        List<SldObject> kvObjects = new ArrayList<>();
+        if(req.containsKey("kvAttr")){
+            kvObjects = sldObjectService.createKeyValueForObject((Map<String,Object>)req.get("kvAttr"));
+        }
+        List<SldObject> attrObjects = new ArrayList<>();
+        if(req.containsKey("attr")){
+            attrObjects = sldObjectService.createAttrForObject((Map<String,Object>)req.get("attr"));
+        }
+        for(SldObject one : kvObjects){
+            SldProtocolSubOpenRecord elm = new SldProtocolSubOpenRecord();
+            elm.setProtocolOpenRecordId(openRecord.getId());
+            if(one.getObjectValue()!=null && one.getObjectValue().equals("---")){
+                elm.setObjectId(one.getId());
+                elm.setIsNeedConfig(2L);
+            }else{
+                elm.setObjectId(one.getId());
+                elm.setIsNeedConfig(1L);
             }
+            sldProtocolSubOpenRecordMapper.insert(elm);
+        }
+
+        for(SldObject one : attrObjects){
+            SldProtocolSubOpenRecord elm = new SldProtocolSubOpenRecord();
+            elm.setId(openRecord.getId());
+            if(one.getObjectValue()!=null && one.getObjectValue().equals("---")){
+                elm.setObjectId(one.getId());
+                elm.setIsNeedConfig(2L);
+            }else{
+                elm.setObjectId(one.getId());
+                elm.setIsNeedConfig(1L);
+            }
+            sldProtocolSubOpenRecordMapper.insert(elm);
         }
         return AjaxResult.success();
     }

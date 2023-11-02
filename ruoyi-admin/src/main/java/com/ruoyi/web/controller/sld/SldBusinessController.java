@@ -1,11 +1,13 @@
 package com.ruoyi.web.controller.sld;
 
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.ruoyi.common.core.domain.AjaxResult;
 import com.sld.business.converter.ObjectConverter;
 import com.sld.business.domain.SldBusiness;
 import com.sld.business.domain.SldBusinessConfig;
 import com.sld.business.domain.SldObject;
+import com.sld.business.domain.SldProtocolSubOpenRecord;
 import com.sld.business.mapper.SldBusinessConfigMapper;
 import com.sld.business.mapper.SldBusinessMapper;
 import com.sld.business.mapper.SldObjectMapper;
@@ -16,9 +18,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -29,7 +34,7 @@ import java.util.Map;
  * @author hrz
  * @since 2023-10-30
  */
-@Controller
+@RestController
 @RequestMapping("/sld-business")
 public class SldBusinessController {
 
@@ -57,6 +62,19 @@ public class SldBusinessController {
     }
 
     /**
+     * 查询业务对象
+     */
+    @PostMapping("/list-business")
+    @Transactional(rollbackFor = Exception.class)
+    public AjaxResult listBusiness(@RequestBody SldBusiness req) throws Exception
+    {
+        QueryWrapper<SldBusiness> queryWrapper = new QueryWrapper<>();
+        queryWrapper.setEntity(req);
+        List<SldBusiness> businessList = sldBusinessMapper.selectList(queryWrapper);
+        return AjaxResult.success(businessList);
+    }
+
+    /**
      * 配置业务
      */
     @PostMapping("/config-business")
@@ -65,22 +83,15 @@ public class SldBusinessController {
     {
         String businessId = (String)req.get("businessId");
         SldBusiness business = sldBusinessMapper.selectById(businessId);
-        Map<String,Object> configData = (Map<String,Object>)req.get("businessConfig");
-        for(Map.Entry<String,Object> one: configData.entrySet()){
-            SldObject rootValueObject = sldObjectMapper.selectById(one.getKey());
-            SldObject configValueObject = new SldObject();
-            configValueObject.setBelongObjectId(rootValueObject.getId());
-            configValueObject.setObjectValue((String)one.getValue());
-            configValueObject.setObjectCode(rootValueObject.getObjectCode() + "_value");
-            Map<String,Object> addAttrForObject = new HashMap<>();
-            addAttrForObject.put("mainObject",rootValueObject.getId());
-            addAttrForObject.put("attrObject", ObjectConverter.convertToMap(configValueObject));
-            SldObject attrObject = sldObjectService.createAttrForObject(addAttrForObject);
-
-            SldBusinessConfig businessConifg = new SldBusinessConfig();
-            businessConifg.setBusinessId(business.getId());
-            businessConifg.setObjectId(attrObject.getId());
-            sldBusinessConfigMapper.insert(businessConifg);
+        List<SldObject> attrObjects = new ArrayList<>();
+        if(req.containsKey("attr")){
+            attrObjects = sldObjectService.createAttrForObject((Map<String,Object>)req.get("attr"));
+        }
+        for(SldObject one : attrObjects){
+            SldBusinessConfig elm = new SldBusinessConfig();
+            elm.setBusinessId(businessId);
+            elm.setObjectId(one.getId());
+            sldBusinessConfigMapper.insert(elm);
         }
         return AjaxResult.success();
     }

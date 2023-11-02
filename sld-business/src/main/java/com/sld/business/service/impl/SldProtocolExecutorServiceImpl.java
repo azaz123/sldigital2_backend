@@ -37,7 +37,11 @@ public class SldProtocolExecutorServiceImpl implements SldProtocolExecutorServic
 
     private Map<String,Object> getKvInfo(String objectId,List<SldObject> tenantConfigObjects){
         Map<String,Object> retData = new HashMap<>();
-        Map<SldObject,SldObject> baseInfoKeyValue = sldObjectService.getKeyValueObject(objectId);
+        List<String> includeIds = new ArrayList<>();
+        if(CollectionUtils.isNotEmpty(tenantConfigObjects)){
+            includeIds = tenantConfigObjects.stream().map(p->p.getId()).collect(Collectors.toList());
+        }
+        Map<SldObject,SldObject> baseInfoKeyValue = sldObjectService.getKeyValueObject(objectId,includeIds);
         for(Map.Entry<SldObject,SldObject> one : baseInfoKeyValue.entrySet()){
             if(one.getValue().getObjectValue().equals("---")){
                 List<SldObject> tenantValues = sldObjectService.listSubObjects(one.getValue().getId(),tenantConfigObjects.stream().map(p->p.getId()).collect(Collectors.toList()));

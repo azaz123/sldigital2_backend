@@ -32,7 +32,7 @@ public class SldProtocolSubOpenRecord extends Model<SldProtocolSubOpenRecord> {
     private String id;
 
     @TableField("protocol_open_record_id")
-    private String protocolId;
+    private String protocolOpenRecordId;
 
     /**
      * 子对象

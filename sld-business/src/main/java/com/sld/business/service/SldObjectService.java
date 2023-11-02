@@ -18,13 +18,14 @@ import java.util.function.Consumer;
 public interface SldObjectService extends IService<SldObject> {
     public SldObject createObject(Map<String,Object> req);
 
-    public SldObject createAttrForObject(Map<String,Object> req);
+    public List<SldObject> createAttrForObject(Map<String,Object> req);
+
 
     public SldObject createListObject(Map<String,Object> req);
 
-    public SldObject createKeyValueForObject(Map<String,Object> req, Consumer<SldObject> callback);
+    public List<SldObject> createKeyValueForObject(Map<String,Object> req);
 
-    public List<SldObject> listSubObjects(String id,List<String> excludeIds);
+    public List<SldObject> listSubObjects(String id,List<String> includeIds);
 
-    public Map<SldObject,SldObject> getKeyValueObject(String id);
+    public Map<SldObject,SldObject> getKeyValueObject(String id,List<String> includeIds);
 }
