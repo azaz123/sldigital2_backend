@@ -3,6 +3,9 @@ package com.sld.business.service.impl;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.google.gson.Gson;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.google.gson.reflect.TypeToken;
 import com.sld.business.domain.SldObject;
 import com.sld.business.mapper.SldObjectMapper;
@@ -49,6 +52,42 @@ public class SldProtocolExecutorServiceImpl implements SldProtocolExecutorServic
         return retData;
     }
 
+    public Map<String, Object> parseJson(Map<String,Object> retObject,String jsonString) {
+        String targetObject = "";
+        String businessMean = "";
+        String dataType = "";
+        String cropListStr = "";
+        if(retObject.containsKey("targetObject")){
+            targetObject = (String)retObject.get("targetObject");
+        }
+        if(retObject.containsKey("businessMean")){
+            businessMean = (String)retObject.get("businessMean");
+        }
+        if(retObject.containsKey("cropListStr")){
+            cropListStr = (String)retObject.get("cropListStr");
+        }
+        if(retObject.containsKey("dataType")){
+            dataType = (String)retObject.get("dataType");
+        }
+
+        Map<String, Object> resultMap = new HashMap<>();
+
+        JsonObject jsonObject = JsonParser.parseString(jsonString).getAsJsonObject();
+        String[] objects = targetObject.split(",");
+
+        JsonObject currentObject = jsonObject;
+        for (String object : objects) {
+            JsonElement jsonElement = currentObject.get(object);
+            if (jsonElement != null && jsonElement.isJsonObject()) {
+                currentObject = jsonElement.getAsJsonObject();
+            }
+        }
+
+        resultMap.put(businessMean, currentObject);
+
+        return resultMap;
+    }
+
 
 
 
@@ -59,7 +98,7 @@ public class SldProtocolExecutorServiceImpl implements SldProtocolExecutorServic
         Map<String, Object> header = new HashMap<>();
         Map<String, Object> param = new HashMap<>();
         Map<String, Object> body = new HashMap<>();
-
+        Map<String, Object> retObject = new HashMap<>();
         for (SldObject one : oneLevelProtocolObjects) {
             if (one.getObjectCode().equals("baseInfo")) {
                 baseInfo = getKvInfo(one.getId(),tenantConfigObjects);
@@ -70,8 +109,9 @@ public class SldProtocolExecutorServiceImpl implements SldProtocolExecutorServic
             } else if (one.getObjectCode().equals("body")) {
                 body = getKvInfo(one.getId(), tenantConfigObjects);
                 body.putAll(inputData);
-            } else if (one.getObjectCode().equals("retData")) {
+            } else if (one.getObjectCode().equals("retObject")) {
                 // Handle retData if needed
+                retObject = getKvInfo(one.getId(), tenantConfigObjects);
             }
         }
 
@@ -140,7 +180,11 @@ public class SldProtocolExecutorServiceImpl implements SldProtocolExecutorServic
                     // Process the successful response
                     // Assuming the response is in JSON format
                     String responseBody = response.body().string();
-                    retData = new Gson().fromJson(responseBody, new TypeToken<Map<String, Object>>() {}.getType());
+                    String jsonStr = new Gson().toJson(responseBody, new TypeToken<Map<String, Object>>() {}.getType());
+                    String cropListStr = (String)retObject.get("cropList");
+
+                    retData = parseJson(retObject,jsonStr);
+                    return retData;
                 } else {
                     // Handle the error response
                     throw new RuntimeException("HTTP request failed with status code: " + response.code());
