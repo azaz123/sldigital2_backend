@@ -88,6 +88,9 @@ public class SldObjectServiceImpl extends ServiceImpl<SldObjectMapper, SldObject
     public Map<SldObject,SldObject> getKeyValueObject(String id,List<String> incluedIds){
         Map<SldObject,SldObject> retData = new HashMap<>();
         List<SldObject> keyObjects = listSubObjects(id,null);
+        if(CollectionUtils.isEmpty(keyObjects)){
+            return new HashMap<>();
+        }
         List<String> keyObjectIds = keyObjects.stream().map(p->p.getId()).collect(Collectors.toList());
         QueryWrapper<SldObject> queryWrapper = new QueryWrapper<>();
         queryWrapper.in("belong_object_id",keyObjectIds);

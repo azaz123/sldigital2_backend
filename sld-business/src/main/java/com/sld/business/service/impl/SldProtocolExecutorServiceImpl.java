@@ -174,6 +174,11 @@ public class SldProtocolExecutorServiceImpl implements SldProtocolExecutorServic
                     String jsonBody = new Gson().toJson(body);
                     RequestBody requestBody = RequestBody.create(JSON, jsonBody);
                     requestBuilder.method(requestType, requestBody);
+                }else{
+                    MediaType JSON = MediaType.parse("application/json; charset=utf-8");
+                    String jsonBody = "{}";
+                    RequestBody requestBody = RequestBody.create(JSON, jsonBody);
+                    requestBuilder.method(requestType, requestBody);
                 }
             }
 

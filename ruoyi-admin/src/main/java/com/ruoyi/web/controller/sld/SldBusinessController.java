@@ -104,7 +104,7 @@ public class SldBusinessController {
     }
 
     /**
-     * 查询业务对象
+     * 执行业务对象
      */
     @PostMapping("/excute-business")
     @Transactional(rollbackFor = Exception.class)
@@ -126,7 +126,7 @@ public class SldBusinessController {
         mergedObjects.addAll(tenantProtocolObjectIds);
         mergedObjects.addAll(tenantConifgObjectIds);
         List<SldObject> objects = sldObjectMapper.selectBatchIds(mergedObjects);
-        sldProtocolExecutorService.excute(protocolObject,objects,new HashMap<>());
-        return AjaxResult.success();
+        Map<String,Object> retData = sldProtocolExecutorService.excute(protocolObject,objects,new HashMap<>());
+        return AjaxResult.success(retData);
     }
 }
