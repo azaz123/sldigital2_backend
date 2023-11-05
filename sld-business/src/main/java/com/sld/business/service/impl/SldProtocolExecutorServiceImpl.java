@@ -56,48 +56,79 @@ public class SldProtocolExecutorServiceImpl implements SldProtocolExecutorServic
         return retData;
     }
 
-    public Map<String, Object> parseJson(Map<String,Object> retObject,String jsonString) {
-        String targetObject = "";
-        String businessMean = "";
-        String dataType = "";
-        String cropListStr = "";
-        if(retObject.containsKey("targetObject")){
-            targetObject = (String)retObject.get("targetObject");
-        }
-        if(retObject.containsKey("businessMean")){
-            businessMean = (String)retObject.get("businessMean");
-        }
-        if(retObject.containsKey("cropListStr")){
-            cropListStr = (String)retObject.get("cropListStr");
-        }
-        if(retObject.containsKey("dataType")){
-            dataType = (String)retObject.get("dataType");
-        }
-
-        Map<String, Object> resultMap = new HashMap<>();
-
-        JsonObject jsonObject = JsonParser.parseString(jsonString).getAsJsonObject();
+    public List<Map<String, Object>> extractListData(Map<String,Object> srcData,String targetObject) {
         String[] objects = targetObject.split(",");
-
-        JsonObject currentObject = jsonObject;
-        for (String object : objects) {
-            JsonElement jsonElement = currentObject.get(object);
-            if (jsonElement != null && jsonElement.isJsonObject()) {
-                currentObject = jsonElement.getAsJsonObject();
-            }
+        Object tmp = srcData;
+        for (String one : objects) {
+            Map<String,Object> tmp2 = (Map<String,Object>)tmp;
+            tmp = tmp2.get(one);
         }
+        return (List<Map<String, Object>>)tmp;
+    }
 
-        resultMap.put(businessMean, currentObject);
-
-        return resultMap;
+    public Map<String, Object> extractSingleData(Map<String,Object> srcData,String targetObject) {
+        String[] objects = targetObject.split(",");
+        Object tmp = srcData;
+        for (String one : objects) {
+            Map<String,Object> tmp2 = (Map<String,Object>)tmp;
+            tmp = tmp2.get(one);
+        }
+        return (Map<String, Object>)tmp;
     }
 
 
 
+    private void excuteSingleDataProtocol(SldObject protocol,List<SldObject> tenantConfigObjects,Map<String,Object> inputData){
+        Map<String, Object> resultMap = new HashMap<>();
+        Map<String, Object> attrInfo = getKvInfo(protocol.getId(), tenantConfigObjects);
+        String srcBusinessId = (String)attrInfo.get("srcBusinessId");
+        String srcExtractData = (String)attrInfo.get("srcExtractData");
+        String targetBusinessId = (String)attrInfo.get("targetBusinessId");
+        String action = (String)attrInfo.get("action");
+        String fieldMapInfo = (String)attrInfo.get("fieldMaoInfo");
+        Map<String,Object> mapInfo = convertSplitorStringToMapData(fieldMapInfo);
+        if(action.equals("list")){
+            List<Map<String, Object>> srcList = new ArrayList<>();
+            if(srcExtractData.equals("---")){
+                srcList = (List<Map<String, Object>>)inputData.get(srcBusinessId);
+            }else{
+                srcList = extractListData((Map<String,Object>)inputData.get(srcBusinessId),srcExtractData);
+            }
 
-    private Map<String,Object> excuteHttpProtocol(SldObject http,List<SldObject> tenantConfigObjects,Map<String,Object> inputData){
+            List<Map<String, Object>> targetList = new ArrayList<>();
+            for(Map<String, Object> one : srcList){
+                Map<String,Object> elm = new HashMap<>();
+                for(Map.Entry<String, Object> subOne: one.entrySet()){
+                    if(mapInfo.containsKey(subOne.getKey())){
+                        String targetField = (String)mapInfo.get(subOne.getKey());
+                        elm.put(targetField,subOne.getValue());
+                        targetList.add(elm);
+                    }
+                }
+            }
+            inputData.put(targetBusinessId,targetList);
+        }else if(action.equals("single")){
+            Map<String, Object> srcObject = new HashMap<>();
+            if(srcExtractData.equals("---")){
+                srcObject = (Map<String, Object>)inputData.get(srcBusinessId);
+            }else{
+                srcObject = extractSingleData((Map<String,Object>)inputData.get(srcBusinessId),srcExtractData);
+            }
+
+            Map<String, Object> targetObject = new HashMap<>();
+            for(Map.Entry<String, Object> subOne: srcObject.entrySet()){
+                if(mapInfo.containsKey(subOne.getKey())){
+                    String targetField = (String)mapInfo.get(subOne.getKey());
+                    targetObject.put(targetField,subOne.getValue());
+                }
+            }
+            inputData.put(targetBusinessId,targetObject);
+        }
+    }
+
+    private Map<String,Object> excuteHttpProtocol(SldObject protocol,List<SldObject> tenantConfigObjects,Map<String,Object> inputData){
         Map<String, Object> retData = new HashMap<>();
-        List<SldObject> oneLevelProtocolObjects = sldObjectService.listSubObjects(http.getId(), null);
+        List<SldObject> oneLevelProtocolObjects = sldObjectService.listSubObjects(protocol.getId(), null);
         Map<String, Object> baseInfo = new HashMap<>();
         Map<String, Object> header = new HashMap<>();
         Map<String, Object> param = new HashMap<>();
@@ -206,9 +237,9 @@ public class SldProtocolExecutorServiceImpl implements SldProtocolExecutorServic
     }
 
 
-    private  Map<String, Object> excuteDbBatchWriteProtocol(SldObject dbBatchWrite, List<SldObject> tenantConfigObjects, Map<String, Object> inputData) {
+    private  Map<String, Object> excuteDbBatchWriteProtocol(SldObject protocol, List<SldObject> tenantConfigObjects, Map<String, Object> inputData) {
         Map<String, Object> resultMap = new HashMap<>();
-        Map<String, Object> dbInfo = getKvInfo(dbBatchWrite.getId(), tenantConfigObjects);
+        Map<String, Object> dbInfo = getKvInfo(protocol.getId(), tenantConfigObjects);
         // Extract database connection information
         String dbAddress = (String) dbInfo.get("dbAddress");
         String dbPort = (String) dbInfo.get("dbPort");
@@ -447,6 +478,9 @@ public class SldProtocolExecutorServiceImpl implements SldProtocolExecutorServic
             return excuteHttpProtocol(protocol,tenantConfigObjects,inputData);
         }else if(protocol.getObjectCode().equals("db")){
             return excuteDbBatchWriteProtocol(protocol,tenantConfigObjects,inputData);
+        }else if(protocol.getObjectCode().equals("singleData")){
+            excuteSingleDataProtocol(protocol,tenantConfigObjects,inputData);
+            return inputData;
         }
         return new HashMap<>();
     }
