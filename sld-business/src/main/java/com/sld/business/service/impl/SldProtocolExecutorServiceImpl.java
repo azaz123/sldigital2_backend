@@ -126,6 +126,22 @@ public class SldProtocolExecutorServiceImpl implements SldProtocolExecutorServic
         }
     }
 
+    private Map<String,Object> excuteConnectorProtocol(SldObject protocol,List<SldObject> tenantConfigObjects,Map<String,Object> inputData){
+        Map<String, Object> retData = new HashMap<>();
+        List<SldObject> oneLevelProtocolObjects = sldObjectService.listSubObjects(protocol.getId(), null);
+        Map<String, Object> stepList = new HashMap<>();
+        Map<String, Object> stepInfo = new HashMap<>();
+        for (SldObject one : oneLevelProtocolObjects) {
+            if (one.getObjectCode().equals("stepList")) {
+                stepList = getKvInfo(one.getId(),tenantConfigObjects);
+            } else if (one.getObjectCode().equals("stepInfo")) {
+                stepInfo = getKvInfo(one.getId(), tenantConfigObjects);
+            }
+        }
+
+        return retData;
+    }
+
     private Map<String,Object> excuteHttpProtocol(SldObject protocol,List<SldObject> tenantConfigObjects,Map<String,Object> inputData){
         Map<String, Object> retData = new HashMap<>();
         List<SldObject> oneLevelProtocolObjects = sldObjectService.listSubObjects(protocol.getId(), null);
