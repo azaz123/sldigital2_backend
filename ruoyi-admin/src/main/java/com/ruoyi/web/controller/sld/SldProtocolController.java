@@ -24,6 +24,52 @@ public class SldProtocolController {
     private SldObjectMapper sldObjectMapper;
 
     /**
+     * 上架单对象数据处理协议
+     */
+    @PostMapping("/create-connector-protocol")
+    @Transactional(rollbackFor = Exception.class)
+    public AjaxResult createConnectorProtocol(@RequestBody Map<String,Object> req) throws Exception{
+        QueryWrapper<SldObject> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("class_code","protocol");
+        queryWrapper.eq("object_code","connector");
+        List<SldObject> exisitObject = sldObjectMapper.selectList(queryWrapper);
+        if(CollectionUtils.isNotEmpty(exisitObject)){
+            return AjaxResult.error("已经存在connector协议");
+        }
+        //创建db对象
+        SldObject dbQuery = new SldObject();
+        dbQuery.setObjectCode("connector");
+        dbQuery.setObjectStruct(1L);
+        dbQuery.setClassCode("protocol");
+        dbQuery.setBelongObjectId("-1");
+        sldObjectMapper.insert(dbQuery);
+        return AjaxResult.success();
+    }
+
+    /**
+     * 上架单对象数据处理协议
+     */
+    @PostMapping("/create-single-data-process-protocol")
+    @Transactional(rollbackFor = Exception.class)
+    public AjaxResult createSingleDataProcessProtocol(@RequestBody Map<String,Object> req) throws Exception{
+        QueryWrapper<SldObject> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("class_code","protocol");
+        queryWrapper.eq("object_code","singleDataProcess");
+        List<SldObject> exisitObject = sldObjectMapper.selectList(queryWrapper);
+        if(CollectionUtils.isNotEmpty(exisitObject)){
+            return AjaxResult.error("已经存在singleDataProcess协议");
+        }
+        //创建db对象
+        SldObject dbQuery = new SldObject();
+        dbQuery.setObjectCode("singleDataProcess");
+        dbQuery.setObjectStruct(1L);
+        dbQuery.setClassCode("protocol");
+        dbQuery.setBelongObjectId("-1");
+        sldObjectMapper.insert(dbQuery);
+        return AjaxResult.success();
+    }
+
+    /**
      * 上架数据库查数据协议对象
      */
     @PostMapping("/create-db-protocol")
