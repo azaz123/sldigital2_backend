@@ -516,10 +516,6 @@ public class SldProtocolExecutorServiceImpl implements SldProtocolExecutorServic
         return map;
     }
 
-
-
-
-
     @Override
     public Map<String,Object> excute(SldObject protocol,List<SldObject> tenantConfigObjects,Map<String,Object> inputData) {
         if(protocol.getObjectCode().equals("http")){
