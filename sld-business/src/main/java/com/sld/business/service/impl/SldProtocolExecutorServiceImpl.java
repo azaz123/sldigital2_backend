@@ -478,7 +478,7 @@ public class SldProtocolExecutorServiceImpl implements SldProtocolExecutorServic
             return excuteHttpProtocol(protocol,tenantConfigObjects,inputData);
         }else if(protocol.getObjectCode().equals("db")){
             return excuteDbProtocol(protocol,tenantConfigObjects,inputData);
-        }else if(protocol.getObjectCode().equals("singleData")){
+        }else if(protocol.getObjectCode().equals("singleDataProcess")){
             excuteSingleDataProtocol(protocol,tenantConfigObjects,inputData);
             return inputData;
         }
