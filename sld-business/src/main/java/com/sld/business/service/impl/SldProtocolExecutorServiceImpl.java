@@ -237,7 +237,7 @@ public class SldProtocolExecutorServiceImpl implements SldProtocolExecutorServic
     }
 
 
-    private  Map<String, Object> excuteDbBatchWriteProtocol(SldObject protocol, List<SldObject> tenantConfigObjects, Map<String, Object> inputData) {
+    private  Map<String, Object> excuteDbProtocol(SldObject protocol, List<SldObject> tenantConfigObjects, Map<String, Object> inputData) {
         Map<String, Object> resultMap = new HashMap<>();
         Map<String, Object> dbInfo = getKvInfo(protocol.getId(), tenantConfigObjects);
         // Extract database connection information
@@ -477,7 +477,7 @@ public class SldProtocolExecutorServiceImpl implements SldProtocolExecutorServic
         if(protocol.getObjectCode().equals("http")){
             return excuteHttpProtocol(protocol,tenantConfigObjects,inputData);
         }else if(protocol.getObjectCode().equals("db")){
-            return excuteDbBatchWriteProtocol(protocol,tenantConfigObjects,inputData);
+            return excuteDbProtocol(protocol,tenantConfigObjects,inputData);
         }else if(protocol.getObjectCode().equals("singleData")){
             excuteSingleDataProtocol(protocol,tenantConfigObjects,inputData);
             return inputData;
