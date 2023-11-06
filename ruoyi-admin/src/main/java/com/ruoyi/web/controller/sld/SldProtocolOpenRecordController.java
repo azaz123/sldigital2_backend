@@ -152,7 +152,6 @@ public class SldProtocolOpenRecordController {
         SldProtocolOpenRecord openRecord = ObjectConverter.convertToInterfaceOpenRecordObject((Map<String,Object>)req.get("openRecord"));
         openRecord.setCreateDate(new Date());
         sldProtocolOpenRecordMapper.insert(openRecord);
-        Map<String,SldObject> index = new HashedMap();
         List<SldObject> kvObjects = new ArrayList<>();
         if(req.containsKey("kvAttr")){
             kvObjects = sldObjectService.createKeyValueForObject((Map<String,Object>)req.get("kvAttr"));
