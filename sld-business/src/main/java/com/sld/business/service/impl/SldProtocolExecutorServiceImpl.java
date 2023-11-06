@@ -162,12 +162,13 @@ public class SldProtocolExecutorServiceImpl implements SldProtocolExecutorServic
         if(connectorInfo.containsKey("stepList")){
             String stepListStr = (String)connectorInfo.get("stepList");
             List<String> stepList = Arrays.asList(stepListStr.split(","));
+            Map<String,Object> lastBusinessRetData = inputData;
             for(String one : stepList){
-                Map<String,Object> oneRetData = excuteBusiness(one,inputData);
-                if(oneRetData.containsKey("listData")){
-                    inputData.put(one+"_out",oneRetData.get("listData"));
-                }else if(oneRetData.containsKey("objectData")){
-                    inputData.put(one+"_out",oneRetData.get("objectData"));
+                lastBusinessRetData = excuteBusiness(one,lastBusinessRetData);
+                if(lastBusinessRetData.containsKey("listData")){
+                    inputData.put(one+"_out",lastBusinessRetData.get("listData"));
+                }else if(lastBusinessRetData.containsKey("objectData")){
+                    inputData.put(one+"_out",lastBusinessRetData.get("objectData"));
                 }
             }
         }
@@ -191,7 +192,8 @@ public class SldProtocolExecutorServiceImpl implements SldProtocolExecutorServic
                 param = getKvInfo(one.getId(), tenantConfigObjects);
             } else if (one.getObjectCode().equals("body")) {
                 body = getKvInfo(one.getId(), tenantConfigObjects);
-                body.putAll(inputData);
+                Map<String,Object> extendData = (Map<String,Object> )inputData.get("objectData");
+                body.putAll(extendData);
             } else if (one.getObjectCode().equals("retObject")) {
                 // Handle retData if needed
                 retObject = getKvInfo(one.getId(), tenantConfigObjects);
@@ -298,9 +300,8 @@ public class SldProtocolExecutorServiceImpl implements SldProtocolExecutorServic
         String dbOperType = (String) dbInfo.get("dbOperType");
 
         if (dbOperType.equals("batchWrite")) {
-            String srcFieldNameForListData = (String) dbInfo.get("srcFieldNameForListData");
             // Batch write logic
-            List<Map<String, Object>> dataList = (List<Map<String, Object>>) inputData.get(srcFieldNameForListData);
+            List<Map<String, Object>> dataList = (List<Map<String, Object>>) inputData.get("listData");
             // JDBC connection and statement
             Connection connection = null;
             PreparedStatement preparedStatement = null;
