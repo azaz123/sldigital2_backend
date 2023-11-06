@@ -7,4 +7,6 @@ import java.util.Map;
 
 public interface SldProtocolExecutorService {
     public Map<String,Object> excute(SldObject protocol, List<SldObject> tenantConfigObjects, Map<String,Object> inputData);
+
+    public Map<String,Object> excuteBusiness(String businessId);
 }

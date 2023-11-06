@@ -7,8 +7,8 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.reflect.TypeToken;
-import com.sld.business.domain.SldObject;
-import com.sld.business.mapper.SldObjectMapper;
+import com.sld.business.domain.*;
+import com.sld.business.mapper.*;
 import com.sld.business.service.SldObjectService;
 import com.sld.business.service.SldProtocolExecutorService;
 import okhttp3.*;
@@ -32,6 +32,18 @@ public class SldProtocolExecutorServiceImpl implements SldProtocolExecutorServic
 
     @Resource
     private SldObjectService sldObjectService;
+
+    @Resource
+    private SldBusinessMapper sldBusinessMapper;
+
+    @Resource
+    private SldBusinessConfigMapper sldBusinessConfigMapper;
+
+    @Resource
+    private SldProtocolOpenRecordMapper sldProtocolOpenRecordMapper;
+
+    @Resource
+    private SldProtocolSubOpenRecordMapper sldProtocolSubOpenRecordMapper;
 
 
 
@@ -81,7 +93,7 @@ public class SldProtocolExecutorServiceImpl implements SldProtocolExecutorServic
     private void excuteSingleDataProtocol(SldObject protocol,List<SldObject> tenantConfigObjects,Map<String,Object> inputData){
         Map<String, Object> resultMap = new HashMap<>();
         Map<String, Object> attrInfo = getKvInfo(protocol.getId(), tenantConfigObjects);
-        String srcBusinessId = (String)attrInfo.get("srcBusinessId");
+        String srcBusinessId = (String)attrInfo.get("srcDataId");
         String srcExtractData = (String)attrInfo.get("srcExtractData");
         String targetBusinessId = (String)attrInfo.get("targetBusinessId");
         String action = (String)attrInfo.get("action");
@@ -126,19 +138,35 @@ public class SldProtocolExecutorServiceImpl implements SldProtocolExecutorServic
         }
     }
 
+    public Map<String,Object> excuteBusiness(String businessId){
+        SldBusiness business = sldBusinessMapper.selectById(businessId);
+        Map<String,Object> sldBusinessConifgReq = new HashMap<>();
+        sldBusinessConifgReq.put("business_id",business.getId());
+        List<SldBusinessConfig> busConifgList = sldBusinessConfigMapper.selectByMap(sldBusinessConifgReq);
+        SldProtocolOpenRecord sldProtocolOpenRecord = sldProtocolOpenRecordMapper.selectById(business.getProtocolOpenRecordId());
+        SldObject protocolObject = sldObjectMapper.selectById(sldProtocolOpenRecord.getProtocolObjectId());
+        Map<String,Object> spsorReq = new HashMap<>();
+        spsorReq.put("protocol_open_record_id",business.getProtocolOpenRecordId());
+        List<SldProtocolSubOpenRecord> spsorList = sldProtocolSubOpenRecordMapper.selectByMap(spsorReq);
+        List<String> tenantProtocolObjectIds = spsorList.stream().map(p->p.getObjectId()).collect(Collectors.toList());
+        List<String> tenantConifgObjectIds = busConifgList.stream().map(p->p.getObjectId()).collect(Collectors.toList());
+        List<String> mergedObjects = new ArrayList<>();
+        mergedObjects.addAll(tenantProtocolObjectIds);
+        mergedObjects.addAll(tenantConifgObjectIds);
+        List<SldObject> objects = sldObjectMapper.selectBatchIds(mergedObjects);
+        return excute(protocolObject,objects,new HashMap<>());
+    }
+
     private Map<String,Object> excuteConnectorProtocol(SldObject protocol,List<SldObject> tenantConfigObjects,Map<String,Object> inputData){
         Map<String, Object> retData = new HashMap<>();
-        List<SldObject> oneLevelProtocolObjects = sldObjectService.listSubObjects(protocol.getId(), null);
-        Map<String, Object> stepList = new HashMap<>();
-        Map<String, Object> stepInfo = new HashMap<>();
-        for (SldObject one : oneLevelProtocolObjects) {
-            if (one.getObjectCode().equals("stepList")) {
-                stepList = getKvInfo(one.getId(),tenantConfigObjects);
-            } else if (one.getObjectCode().equals("stepInfo")) {
-                stepInfo = getKvInfo(one.getId(), tenantConfigObjects);
+        Map<String, Object> connectorInfo = getKvInfo(protocol.getId(), tenantConfigObjects);
+        if(connectorInfo.containsKey("stepList")){
+            String stepListStr = (String)connectorInfo.get("stepList");
+            List<String> stepList = Arrays.asList(stepListStr.split(","));
+            for(String one : stepList){
+                excuteBusiness(one);
             }
         }
-
         return retData;
     }
 

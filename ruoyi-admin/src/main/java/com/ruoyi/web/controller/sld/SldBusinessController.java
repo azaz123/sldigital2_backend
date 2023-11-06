@@ -110,23 +110,7 @@ public class SldBusinessController {
     @Transactional(rollbackFor = Exception.class)
     public AjaxResult excuteBusiness(@RequestBody Map<String,Object> req) throws Exception
     {
-        String businessId = (String)req.get("businessId");
-        SldBusiness business = sldBusinessMapper.selectById(businessId);
-        Map<String,Object> sldBusinessConifgReq = new HashMap<>();
-        sldBusinessConifgReq.put("business_id",business.getId());
-        List<SldBusinessConfig> busConifgList = sldBusinessConfigMapper.selectByMap(sldBusinessConifgReq);
-        SldProtocolOpenRecord sldProtocolOpenRecord = sldProtocolOpenRecordMapper.selectById(business.getProtocolOpenRecordId());
-        SldObject protocolObject = sldObjectMapper.selectById(sldProtocolOpenRecord.getProtocolObjectId());
-        Map<String,Object> spsorReq = new HashMap<>();
-        spsorReq.put("protocol_open_record_id",business.getProtocolOpenRecordId());
-        List<SldProtocolSubOpenRecord> spsorList = sldProtocolSubOpenRecordMapper.selectByMap(spsorReq);
-        List<String> tenantProtocolObjectIds = spsorList.stream().map(p->p.getObjectId()).collect(Collectors.toList());
-        List<String> tenantConifgObjectIds = busConifgList.stream().map(p->p.getObjectId()).collect(Collectors.toList());
-        List<String> mergedObjects = new ArrayList<>();
-        mergedObjects.addAll(tenantProtocolObjectIds);
-        mergedObjects.addAll(tenantConifgObjectIds);
-        List<SldObject> objects = sldObjectMapper.selectBatchIds(mergedObjects);
-        Map<String,Object> retData = sldProtocolExecutorService.excute(protocolObject,objects,new HashMap<>());
+        Map<String,Object> retData = sldProtocolExecutorService.excuteBusiness((String)req.get("businessId"));
         return AjaxResult.success(retData);
     }
 }
