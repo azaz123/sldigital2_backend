@@ -90,21 +90,20 @@ public class SldProtocolExecutorServiceImpl implements SldProtocolExecutorServic
 
 
 
-    private void excuteSingleDataProtocol(SldObject protocol,List<SldObject> tenantConfigObjects,Map<String,Object> inputData){
+    private Map<String,Object> excuteSingleDataProtocol(SldObject protocol,List<SldObject> tenantConfigObjects,Map<String,Object> inputData){
         Map<String, Object> resultMap = new HashMap<>();
         Map<String, Object> attrInfo = getKvInfo(protocol.getId(), tenantConfigObjects);
-        String srcBusinessId = (String)attrInfo.get("srcDataId");
+        String srcDataId = (String)attrInfo.get("srcDataId");
         String srcExtractData = (String)attrInfo.get("srcExtractData");
-        String targetBusinessId = (String)attrInfo.get("targetBusinessId");
         String action = (String)attrInfo.get("action");
-        String fieldMapInfo = (String)attrInfo.get("fieldMaoInfo");
+        String fieldMapInfo = (String)attrInfo.get("fieldMapInfo");
         Map<String,Object> mapInfo = convertSplitorStringToMapData(fieldMapInfo);
         if(action.equals("list")){
             List<Map<String, Object>> srcList = new ArrayList<>();
             if(srcExtractData.equals("---")){
-                srcList = (List<Map<String, Object>>)inputData.get(srcBusinessId);
+                srcList = (List<Map<String, Object>>)inputData.get(srcDataId);
             }else{
-                srcList = extractListData((Map<String,Object>)inputData.get(srcBusinessId),srcExtractData);
+                srcList = extractListData((Map<String,Object>)inputData.get(srcDataId),srcExtractData);
             }
 
             List<Map<String, Object>> targetList = new ArrayList<>();
@@ -118,13 +117,13 @@ public class SldProtocolExecutorServiceImpl implements SldProtocolExecutorServic
                     }
                 }
             }
-            inputData.put(targetBusinessId,targetList);
+            resultMap.put("listData",targetList);
         }else if(action.equals("single")){
             Map<String, Object> srcObject = new HashMap<>();
             if(srcExtractData.equals("---")){
-                srcObject = (Map<String, Object>)inputData.get(srcBusinessId);
+                srcObject = (Map<String, Object>)inputData.get(srcDataId);
             }else{
-                srcObject = extractSingleData((Map<String,Object>)inputData.get(srcBusinessId),srcExtractData);
+                srcObject = extractSingleData((Map<String,Object>)inputData.get(srcDataId),srcExtractData);
             }
 
             Map<String, Object> targetObject = new HashMap<>();
@@ -134,11 +133,12 @@ public class SldProtocolExecutorServiceImpl implements SldProtocolExecutorServic
                     targetObject.put(targetField,subOne.getValue());
                 }
             }
-            inputData.put(targetBusinessId,targetObject);
+            resultMap.put("objectData",targetObject);
         }
+        return resultMap;
     }
 
-    public Map<String,Object> excuteBusiness(String businessId){
+    public Map<String,Object> excuteBusiness(String businessId,Map<String,Object> inputData){
         SldBusiness business = sldBusinessMapper.selectById(businessId);
         Map<String,Object> sldBusinessConifgReq = new HashMap<>();
         sldBusinessConifgReq.put("business_id",business.getId());
@@ -154,20 +154,24 @@ public class SldProtocolExecutorServiceImpl implements SldProtocolExecutorServic
         mergedObjects.addAll(tenantProtocolObjectIds);
         mergedObjects.addAll(tenantConifgObjectIds);
         List<SldObject> objects = sldObjectMapper.selectBatchIds(mergedObjects);
-        return excute(protocolObject,objects,new HashMap<>());
+        return excute(protocolObject,objects,inputData);
     }
 
     private Map<String,Object> excuteConnectorProtocol(SldObject protocol,List<SldObject> tenantConfigObjects,Map<String,Object> inputData){
-        Map<String, Object> retData = new HashMap<>();
         Map<String, Object> connectorInfo = getKvInfo(protocol.getId(), tenantConfigObjects);
         if(connectorInfo.containsKey("stepList")){
             String stepListStr = (String)connectorInfo.get("stepList");
             List<String> stepList = Arrays.asList(stepListStr.split(","));
             for(String one : stepList){
-                excuteBusiness(one);
+                Map<String,Object> oneRetData = excuteBusiness(one,inputData);
+                if(oneRetData.containsKey("listData")){
+                    inputData.put(one+"_out",oneRetData.get("listData"));
+                }else if(oneRetData.containsKey("objectData")){
+                    inputData.put(one+"_out",oneRetData.get("objectData"));
+                }
             }
         }
-        return retData;
+        return inputData;
     }
 
     private Map<String,Object> excuteHttpProtocol(SldObject protocol,List<SldObject> tenantConfigObjects,Map<String,Object> inputData){
@@ -264,8 +268,8 @@ public class SldProtocolExecutorServiceImpl implements SldProtocolExecutorServic
                     // Process the successful response
                     // Assuming the response is in JSON format
                     String responseBody = response.body().string();
-                    retData = new Gson().fromJson(responseBody, new TypeToken<Map<String, Object>>() {}.getType());
-//                    retData = parseJson(retObject,jsonStr);
+                    Map<String,Object> jsonMap = new Gson().fromJson(responseBody, new TypeToken<Map<String, Object>>() {}.getType());
+                    retData.put("objectData",jsonMap);
                     return retData;
                 } else {
                     // Handle the error response
@@ -326,7 +330,7 @@ public class SldProtocolExecutorServiceImpl implements SldProtocolExecutorServic
                 connection.commit();
 
                 // Convert batch result to Map
-                resultMap.put("batchResult", Arrays.asList(batchResult));
+                resultMap.put("listData", Arrays.asList(batchResult));
 
             } catch (SQLException e) {
                 // Handle any exceptions
@@ -416,7 +420,7 @@ public class SldProtocolExecutorServiceImpl implements SldProtocolExecutorServic
                 }
 
                 // Set the query result to the output parameter
-                inputData.put("retList", retList);
+                resultMap.put("listData", retList);
 
             } catch (SQLException e) {
                 // Handle any exceptions
@@ -523,8 +527,9 @@ public class SldProtocolExecutorServiceImpl implements SldProtocolExecutorServic
         }else if(protocol.getObjectCode().equals("db")){
             return excuteDbProtocol(protocol,tenantConfigObjects,inputData);
         }else if(protocol.getObjectCode().equals("singleDataProcess")){
-            excuteSingleDataProtocol(protocol,tenantConfigObjects,inputData);
-            return inputData;
+            return excuteSingleDataProtocol(protocol,tenantConfigObjects,inputData);
+        }else if(protocol.getObjectCode().equals("connector")){
+            return excuteConnectorProtocol(protocol,tenantConfigObjects,inputData);
         }
         return new HashMap<>();
     }
