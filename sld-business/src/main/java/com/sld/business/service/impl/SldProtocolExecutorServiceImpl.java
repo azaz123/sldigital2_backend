@@ -195,7 +195,9 @@ public class SldProtocolExecutorServiceImpl implements SldProtocolExecutorServic
             } else if (one.getObjectCode().equals("body")) {
                 body = getKvInfo(one.getId(), tenantConfigObjects);
                 Map<String,Object> extendData = (Map<String,Object> )inputData.get("objectData");
-                body.putAll(extendData);
+                if(extendData!=null && extendData.size()>0){
+                    body.putAll(extendData);
+                }
             } else if (one.getObjectCode().equals("retObject")) {
                 // Handle retData if needed
                 retObject = getKvInfo(one.getId(), tenantConfigObjects);
