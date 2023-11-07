@@ -470,23 +470,47 @@ public class SldProtocolExecutorServiceImpl implements SldProtocolExecutorServic
         return sqlBuilder.toString();
     }
 
-    private String generateBatchInsertSql(String tableName, Map<String, Object> data) {
-        StringBuilder sb = new StringBuilder();
-        StringBuilder valuesSb = new StringBuilder();
-        sb.append("INSERT INTO ").append(tableName).append(" (");
+//    private String generateBatchInsertSql(String tableName, Map<String, Object> data) {
+//        StringBuilder sb = new StringBuilder();
+//        StringBuilder valuesSb = new StringBuilder();
+//        sb.append("INSERT INTO ").append(tableName).append(" (");
+//
+//        for (String key : data.keySet()) {
+//            String columnName = convertToSnakeCase(key);
+//            sb.append(columnName).append(", ");
+//            valuesSb.append("?, ");
+//        }
+//
+//        sb.delete(sb.length() - 2, sb.length());
+//        valuesSb.delete(valuesSb.length() - 2, valuesSb.length());
+//        sb.append(") VALUES (").append(valuesSb).append(")");
+//
+//        return sb.toString();
+//    }
 
-        for (String key : data.keySet()) {
-            String columnName = convertToSnakeCase(key);
-            sb.append(columnName).append(", ");
-            valuesSb.append("?, ");
-        }
+private String generateBatchInsertSql(String tableName, Map<String, Object> data) {
+    StringBuilder sb = new StringBuilder();
+    StringBuilder valuesSb = new StringBuilder();
+    StringBuilder updatesSb = new StringBuilder();
+    sb.append("INSERT INTO ").append(tableName).append(" (");
 
-        sb.delete(sb.length() - 2, sb.length());
-        valuesSb.delete(valuesSb.length() - 2, valuesSb.length());
-        sb.append(") VALUES (").append(valuesSb).append(")");
-
-        return sb.toString();
+    for (String key : data.keySet()) {
+        String columnName = convertToSnakeCase(key);
+        sb.append(columnName).append(", ");
+        valuesSb.append("?, ");
+        updatesSb.append(columnName).append("=VALUES(").append(columnName).append("), ");
     }
+
+    sb.delete(sb.length() - 2, sb.length());
+    valuesSb.delete(valuesSb.length() - 2, valuesSb.length());
+    updatesSb.delete(updatesSb.length() - 2, updatesSb.length());
+
+    sb.append(") VALUES (").append(valuesSb).append(") ON DUPLICATE KEY UPDATE ").append(updatesSb);
+
+    return sb.toString();
+}
+
+
 
     private void setPreparedStatementParameters(PreparedStatement preparedStatement, Map<String, Object> data) throws SQLException {
         int index = 1;
