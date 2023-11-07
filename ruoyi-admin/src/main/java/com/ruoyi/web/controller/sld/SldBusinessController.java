@@ -110,7 +110,7 @@ public class SldBusinessController {
     @Transactional(rollbackFor = Exception.class)
     public AjaxResult excuteBusiness(@RequestBody Map<String,Object> req) throws Exception
     {
-        Map<String,Object> retData = sldProtocolExecutorService.excuteBusiness((String)req.get("businessId"),new HashMap<>());
+        Map<String,Object> retData = sldProtocolExecutorService.excuteBusiness((String)req.get("businessId"),req);
         return AjaxResult.success(retData);
     }
 }

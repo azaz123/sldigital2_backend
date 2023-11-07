@@ -113,8 +113,10 @@ public class SldProtocolExecutorServiceImpl implements SldProtocolExecutorServic
                     if(mapInfo.containsKey(subOne.getKey())){
                         String targetField = (String)mapInfo.get(subOne.getKey());
                         elm.put(targetField,subOne.getValue());
-                        targetList.add(elm);
                     }
+                }
+                if(elm.size()>0){
+                    targetList.add(elm);
                 }
             }
             resultMap.put("listData",targetList);
